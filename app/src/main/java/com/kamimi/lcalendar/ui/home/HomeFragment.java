@@ -7,8 +7,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +26,15 @@ import com.kamimi.lcalendar.Utils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
 import com.kamimi.lcalendar.view.CalendarView;
 
+import java.util.Date;
+
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private FragmentHomeBinding binding;
+
+    private LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
+    private Typeface ldzsFont, laksFont;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
@@ -38,8 +45,44 @@ public class HomeFragment extends Fragment {
         homeViewModel.getHText().observe(getViewLifecycleOwner(), binding.textHitokoto::setText);
 
         SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
+        ldzsFont = Typeface.createFromAsset(getContext().getAssets(), "fonts/ldzs.ttf");
+        laksFont = Typeface.createFromAsset(getContext().getAssets(), "fonts/LaksOner.ttf");
+
+        binding.titleHome.setTypeface(laksFont);
+        binding.textHome.setTypeface(ldzsFont);
+        binding.textHitokoto.setTypeface(ldzsFont);
 
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
+            @Override
+            public boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {
+                float x = day.location_x + 30, y = day.location_y + 100;
+                Paint p = new Paint(paint);
+                p.setARGB(155, 34,26,44);
+                if (day.dateText.equals("-1")) {
+                    p.setTypeface(ldzsFont);
+                    p.setTextSize(50);
+                } else if (day.isCurrent) {
+                    p.setTypeface(laksFont);
+                    p.setTextSize(50);
+                    if (day.backgroundStyle == 2) {
+                        p.setTextSize(70);
+                        x -= 10;
+                        y += 5;
+                    } else if (day.backgroundStyle == 3) {
+                        p.setFakeBoldText(true);
+                        p.setARGB(200, 34,26,44);
+                        p.setTextSize(70);
+                        x -= 10;
+                        y += 5;
+                    }
+                } else {
+                    p.setTypeface(ldzsFont);
+                    p.setTextSize(35);
+                }
+                canvas.drawText(day.text, x, y, p);
+                return true;
+            }
+
             @Override
             public void drawDayAbove(Day day, Canvas canvas, Context context, Paint paint) {
                 if (day.isCurrent && day.text.equals("01")) {
@@ -54,10 +97,14 @@ public class HomeFragment extends Fragment {
                 // 画爱心
                 if (markSp.contains(day.dateText)) {
                     long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);
-                    bitmap = randomRotate(randomSeed, bitmap);
-                    bitmap = randomSize(randomSeed, bitmap);
                     float[] randomPos = randomPos(randomSeed);
+                    Bitmap bitmap;
+                    if ((bitmap = heartPicCache.get(day.dateText)) == null) {
+                        bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);
+                        bitmap = randomRotate(randomSeed, bitmap);
+                        bitmap = randomSize(randomSeed, bitmap);
+                        heartPicCache.put(day.dateText, bitmap);
+                    }
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
                 }
             }
@@ -69,8 +116,8 @@ public class HomeFragment extends Fragment {
      * 随机大小
      */
     private Bitmap randomSize(long seed, Bitmap origin) {
-        int w = Utils.randomInt(seed, 80, 120);
-        int h = Utils.randomInt(seed, 80, 120);
+        int w = Utils.randomInt(seed, 60, 70);
+        int h = Utils.randomInt(seed, 60, 70);
         return resizeBitmap(origin, w, h);
     }
 
@@ -78,9 +125,8 @@ public class HomeFragment extends Fragment {
      * 随机偏移
      */
     private float[] randomPos(long seed) {
-        float left = Utils.randomFloat(seed, -5, 35);
-        float top = Utils.randomFloat(seed, 20, 60);
-        Log.v(String.valueOf(seed), String.valueOf(left));
+        float left = Utils.randomFloat(seed, 40, 60);
+        float top = Utils.randomFloat(seed, 25, 45);
         return new float[]{left, top};
     }
 
@@ -88,7 +134,7 @@ public class HomeFragment extends Fragment {
      * 随机旋转
      */
     private Bitmap randomRotate(long seed, Bitmap origin) {
-        float alpha = Utils.randomFloat(seed, -20f, 20f);
+        float alpha = Utils.randomFloat(seed, 5, 45);
         return rotateBitmap(origin, alpha);
     }
 

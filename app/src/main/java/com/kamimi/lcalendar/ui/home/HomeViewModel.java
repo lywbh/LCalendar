@@ -26,19 +26,20 @@ public class HomeViewModel extends ViewModel {
         hText = new MutableLiveData<>();
 
         Utils.submitTask(() -> {
+            String BLANK_GAP = "        ";
             try {
                 JSONObject holidayJson = Utils.httpGet("http://timor.tech/api/holiday/tts/");
                 if (holidayJson.getInt("code") != 0) {
                     throw new NetworkErrorException("返回码不正确：" + holidayJson);
                 }
-                mText.postValue("\u3000\u3000" + holidayJson.getString("tts"));
+                mText.postValue(BLANK_GAP + holidayJson.getString("tts"));
             } catch (Exception e) {
                 Log.e("ERROR", "timor网络异常", e);
                 mText.postValue("获取今天的数据出现了一些问题哟。");
             }
             try {
                 JSONObject hitokotoJson = Utils.httpGet("https://v1.hitokoto.cn/");
-                hText.postValue("\u3000\u3000" + hitokotoJson.getString("hitokoto")
+                hText.postValue(BLANK_GAP + hitokotoJson.getString("hitokoto")
                         + "——" + hitokotoJson.getString("from"));
             } catch (Exception e) {
                 Log.e("ERROR", "hitokoto网络异常", e);
