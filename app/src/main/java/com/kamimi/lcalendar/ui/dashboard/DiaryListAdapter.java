@@ -2,6 +2,7 @@ package com.kamimi.lcalendar.ui.dashboard;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,10 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     public ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.diary_list_item_holder, parent, false);
         view.getLayoutParams().height = recyclerView.getHeight() / 4;
+        view.setOnClickListener(v -> {
+            Log.v("??????", v.toString());
+            // TODO 点击item弹出详情页
+        });
         return new ViewHolder(view);
     }
 

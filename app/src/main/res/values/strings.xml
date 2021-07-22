@@ -3,4 +3,7 @@
     <string name="title_home">日历</string>
     <string name="title_dashboard">日记</string>
     <string name="title_notifications">提醒</string>
+    <string name="diary_submit_cancel">放弃</string>
+    <string name="diary_submit_confirm">写好啦</string>
+    <string name="diary_add">写日记</string>
 </resources>
