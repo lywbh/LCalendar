@@ -9,7 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,19 +20,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.kamimi.lcalendar.Day;
+import com.kamimi.lcalendar.MainActivity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.Utils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
 import com.kamimi.lcalendar.view.CalendarView;
-
-import java.util.Date;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private FragmentHomeBinding binding;
 
-    private LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
+    private final LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
     private Typeface ldzsFont, laksFont;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,7 +42,6 @@ public class HomeFragment extends Fragment {
         homeViewModel.getMText().observe(getViewLifecycleOwner(), binding.textHome::setText);
         homeViewModel.getHText().observe(getViewLifecycleOwner(), binding.textHitokoto::setText);
 
-        SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
         ldzsFont = Typeface.createFromAsset(getContext().getAssets(), "fonts/ldzs.ttf");
         laksFont = Typeface.createFromAsset(getContext().getAssets(), "fonts/LaksOner.ttf");
 
@@ -52,6 +49,15 @@ public class HomeFragment extends Fragment {
         binding.textHome.setTypeface(ldzsFont);
         binding.textHitokoto.setTypeface(ldzsFont);
 
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // 爱心记录
+        SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
+        //日历绘制回调
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
             @Override
             public boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {
@@ -89,6 +95,7 @@ public class HomeFragment extends Fragment {
                     String[] daySplit = day.dateText.split("-");
                     String msg = Utils.monthToEn(Integer.parseInt(daySplit[1])) + "  " + daySplit[0];
                     if (!msg.equals(homeViewModel.getTitleText().getValue())) {
+                        ((MainActivity) getActivity()).reBlurBackground();
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.hide));
                         homeViewModel.getTitleText().setValue(msg);
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
@@ -109,7 +116,6 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-        return binding.getRoot();
     }
 
     /**

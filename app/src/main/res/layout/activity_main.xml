@@ -24,10 +24,9 @@
         android:layout_height="match_parent"
         android:orientation="horizontal" />
     <com.github.mmin18.widget.RealtimeBlurView
+        android:id="@+id/background_blur"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:realtimeBlurRadius="10dp"
-        app:realtimeOverlayColor="#0000" >
+        android:layout_height="match_parent">
     </com.github.mmin18.widget.RealtimeBlurView>
 
     <fragment

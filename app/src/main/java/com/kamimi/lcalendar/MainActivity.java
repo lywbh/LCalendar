@@ -1,5 +1,6 @@
 package com.kamimi.lcalendar;
 
+import android.animation.ValueAnimator;
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private AssetManager assetManager;
     private volatile Drawable nextBackground;
 
+    private ValueAnimator blurAnimator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,13 +47,23 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+        //随机轮换壁纸
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             setBackground();
             prepareBackground();
         });
-
+        //初始化第一张壁纸
         prepareBackground();
         setBackground();
+        // 高斯模糊动画
+        blurAnimator = ValueAnimator.ofInt(0, 10);
+        blurAnimator.setDuration(250);
+        blurAnimator.setRepeatMode(ValueAnimator.RESTART);
+        blurAnimator.addUpdateListener(animation -> {
+            int currentValue = (int) animation.getAnimatedValue();
+            binding.backgroundBlur.setBlurRadius(currentValue);
+            binding.backgroundBlur.requestLayout();
+        });
     }
 
     private void prepareBackground() {
@@ -66,8 +79,15 @@ public class MainActivity extends AppCompatActivity {
     private void setBackground() {
         if (nextBackground != null) {
             binding.background.setBackground(nextBackground);
-            binding.background.startAnimation(AnimationUtils.loadAnimation(this, R.anim.show_slow));
+            binding.background.startAnimation(AnimationUtils.loadAnimation(this, R.anim.show));
         }
+    }
+
+    /**
+     * 重绘壁纸的模糊动画
+     */
+    public void reBlurBackground() {
+        blurAnimator.start();
     }
 
 }
