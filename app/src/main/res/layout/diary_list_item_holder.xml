@@ -5,26 +5,42 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/diary_list_item"
+        android:id="@+id/diary_list_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="10dp"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <TextView
-            android:tag="diary_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp" />
+        <LinearLayout
+            android:id="@+id/diary_list_item"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="10"
+            android:orientation="vertical">
 
-        <TextView
-            android:tag="diary_preview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:textSize="16sp" />
+            <TextView
+                android:tag="diary_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+
+            <TextView
+                android:tag="diary_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <Button
+            android:tag="diary_delete_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:text="@string/diary_delete"
+            android:maxLines="1" />
 
     </LinearLayout>
 

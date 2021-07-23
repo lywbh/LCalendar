@@ -17,6 +17,7 @@ public class NotificationsFragment extends Fragment {
     private FragmentNotificationsBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         notificationsViewModel = new ViewModelProvider(this).get(NotificationsViewModel.class);
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         notificationsViewModel.getText().observe(getViewLifecycleOwner(), binding.textNotifications::setText);
