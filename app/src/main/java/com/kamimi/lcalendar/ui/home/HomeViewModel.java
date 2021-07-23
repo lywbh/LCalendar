@@ -12,6 +12,8 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 
+import static com.kamimi.lcalendar.obj.GlobalConstants.BLANK_GAP;
+
 public class HomeViewModel extends ViewModel {
 
     private final MutableLiveData<String> titleText;
@@ -26,7 +28,6 @@ public class HomeViewModel extends ViewModel {
         hText = new MutableLiveData<>();
 
         Utils.submitTask(() -> {
-            String BLANK_GAP = "        ";
             try {
                 JSONObject holidayJson = Utils.httpGet("http://timor.tech/api/holiday/tts/");
                 if (holidayJson.getInt("code") != 0) {

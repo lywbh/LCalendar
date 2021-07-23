@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
-import android.view.animation.AnimationUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -52,20 +51,23 @@ public class MainActivity extends AppCompatActivity {
             setBackground();
             prepareBackground();
         });
-        //初始化第一张壁纸
-        prepareBackground();
-        setBackground();
         // 高斯模糊动画
         blurAnimator = ValueAnimator.ofInt(0, 10);
-        blurAnimator.setDuration(250);
+        blurAnimator.setDuration(300);
         blurAnimator.setRepeatMode(ValueAnimator.RESTART);
         blurAnimator.addUpdateListener(animation -> {
             int currentValue = (int) animation.getAnimatedValue();
             binding.backgroundBlur.setBlurRadius(currentValue);
             binding.backgroundBlur.requestLayout();
         });
+        //初始化第一张壁纸
+        prepareBackground();
+        setBackground();
     }
 
+    /**
+     * 随机加载一张背景图资源
+     */
     private void prepareBackground() {
         try {
             String[] bgNames = assetManager.list("background");
@@ -76,10 +78,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 设置当前加载好的背景图
+     */
     private void setBackground() {
         if (nextBackground != null) {
             binding.background.setBackground(nextBackground);
-            binding.background.startAnimation(AnimationUtils.loadAnimation(this, R.anim.show));
+            reBlurBackground();
         }
     }
 

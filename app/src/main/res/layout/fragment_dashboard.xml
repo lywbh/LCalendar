@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,14 +15,15 @@
 
     <!--弹出层一定要放在最后面才会显示在最上层，同时默认隐藏-->
     <LinearLayout
-        android:id="@+id/diary_editor"
+        android:id="@+id/diary_detail"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!--蒙层-->
         <LinearLayout
-            android:id="@+id/diary_editor_shade"
+            android:id="@+id/diary_shade"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -31,6 +31,46 @@
             android:alpha="0.5"
             android:layout_weight="1" />
 
+        <!--详情页-->
+        <LinearLayout
+            android:id="@+id/diary_detail_panel"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#FFF"
+            android:orientation="vertical"
+            android:layout_weight="5">
+
+            <com.elyeproj.loaderviewlibrary.LoaderTextView
+                android:id="@+id/diary_detail_text"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:layout_margin="15dp"
+                android:padding="10dp"
+                android:gravity="top"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:gravity="end"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <Button
+                    android:id="@+id/diary_edit_button"
+                    android:text="@string/diary_edit"
+                    android:layout_marginEnd="15dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?android:attr/buttonBarNeutralButtonStyle" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!--编辑页-->
         <LinearLayout
             android:id="@+id/diary_editor_panel"
             android:gravity="center"
@@ -41,23 +81,25 @@
             android:layout_weight="5">
 
             <EditText
-                android:id="@+id/edt_order_note_text"
+                android:id="@+id/diary_editor_text"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="6"
+                android:layout_weight="3"
                 android:layout_margin="15dp"
-                android:padding="10dp"
+                android:paddingVertical="15dp"
+                android:paddingHorizontal="20dp"
                 android:gravity="top"
                 android:background="@drawable/ic_editor_bg"
                 android:textColor="@color/black"
                 android:textSize="14sp"
-                android:autofillHints="写下你的愿望吧~" />
+                android:autofillHints="写下你的愿望吧~"
+                android:inputType="textMultiLine" />
 
             <LinearLayout
-                android:gravity="right"
+                android:gravity="end"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="2">
+                android:layout_weight="1">
 
                 <Button
                     android:id="@+id/diary_cancel_button"
