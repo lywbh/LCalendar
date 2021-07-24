@@ -6,7 +6,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.kamimi.lcalendar.CommonUtils;
+import com.kamimi.lcalendar.utils.CommonUtils;
 
 import org.json.JSONObject;
 

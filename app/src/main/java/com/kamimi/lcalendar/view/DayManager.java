@@ -1,8 +1,6 @@
 package com.kamimi.lcalendar.view;
 
-import android.util.Log;
-
-import com.kamimi.lcalendar.Day;
+import com.kamimi.lcalendar.obj.Day;
 
 import java.util.ArrayList;
 import java.util.Calendar;

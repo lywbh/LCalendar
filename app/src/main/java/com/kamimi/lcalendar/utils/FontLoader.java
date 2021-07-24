@@ -1,4 +1,4 @@
-package com.kamimi.lcalendar.obj;
+package com.kamimi.lcalendar.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;

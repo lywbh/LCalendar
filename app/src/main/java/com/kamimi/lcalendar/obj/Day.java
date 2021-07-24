@@ -1,4 +1,4 @@
-package com.kamimi.lcalendar;
+package com.kamimi.lcalendar.obj;
 
 import android.content.Context;
 import android.graphics.Canvas;

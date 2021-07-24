@@ -1,4 +1,4 @@
-package com.kamimi.lcalendar;
+package com.kamimi.lcalendar.utils;
 
 import android.accounts.NetworkErrorException;
 

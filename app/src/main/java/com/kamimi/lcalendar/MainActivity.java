@@ -13,7 +13,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.kamimi.lcalendar.databinding.ActivityMainBinding;
-import com.kamimi.lcalendar.obj.FontLoader;
+import com.kamimi.lcalendar.utils.FontLoader;
+import com.kamimi.lcalendar.utils.CommonUtils;
 
 import java.io.IOException;
 
@@ -43,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        //加载字体
+        // 加载字体
         FontLoader.loadAll(this);
-        //随机轮换壁纸
+        // 随机轮换壁纸
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             setBackground();
             prepareBackground();
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             binding.backgroundBlur.setBlurRadius(currentValue);
             binding.backgroundBlur.requestLayout();
         });
-        //初始化第一张壁纸
+        // 初始化第一张壁纸
         prepareBackground();
         setBackground();
     }

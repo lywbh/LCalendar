@@ -18,12 +18,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.kamimi.lcalendar.Day;
+import com.kamimi.lcalendar.obj.Day;
 import com.kamimi.lcalendar.MainActivity;
 import com.kamimi.lcalendar.R;
-import com.kamimi.lcalendar.CommonUtils;
+import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
-import com.kamimi.lcalendar.obj.FontLoader;
+import com.kamimi.lcalendar.utils.FontLoader;
 import com.kamimi.lcalendar.view.CalendarView;
 
 public class HomeFragment extends Fragment {
@@ -42,16 +42,16 @@ public class HomeFragment extends Fragment {
         homeViewModel.getMText().observe(getViewLifecycleOwner(), binding.textHome::setText);
         homeViewModel.getHText().observe(getViewLifecycleOwner(), binding.textHitokoto::setText);
 
-        binding.titleHome.setTypeface(FontLoader.laksFont);
-        binding.textHome.setTypeface(FontLoader.ldzsFont);
-        binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
-
         return binding.getRoot();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        // 设置页面各字体
+        binding.titleHome.setTypeface(FontLoader.laksFont);
+        binding.textHome.setTypeface(FontLoader.ldzsFont);
+        binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
         // 爱心记录
         SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
         //日历绘制回调

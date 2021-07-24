@@ -9,9 +9,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 
-import com.kamimi.lcalendar.Day;
+import com.kamimi.lcalendar.obj.Day;
 import com.kamimi.lcalendar.R;
-import com.kamimi.lcalendar.CommonUtils;
+import com.kamimi.lcalendar.utils.CommonUtils;
 
 import java.util.Calendar;
 import java.util.Date;

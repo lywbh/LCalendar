@@ -21,11 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.elyeproj.loaderviewlibrary.LoaderTextView;
-import com.kamimi.lcalendar.DialogUtils;
+import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.R;
-import com.kamimi.lcalendar.CommonUtils;
+import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.obj.DiaryPreview;
-import com.kamimi.lcalendar.obj.FontLoader;
+import com.kamimi.lcalendar.utils.FontLoader;
 
 import org.jetbrains.annotations.NotNull;
 
