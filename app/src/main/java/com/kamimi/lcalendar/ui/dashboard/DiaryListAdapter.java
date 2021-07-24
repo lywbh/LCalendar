@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -68,12 +67,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         ldzsFont = Typeface.createFromAsset(context.getAssets(), "fonts/ldzs.ttf");
         laksFont = Typeface.createFromAsset(context.getAssets(), "fonts/LaksOner.ttf");
         // 弹出层滑动动画
-        View diaryDetailPanel = diaryDetailView.findViewById(R.id.diary_detail_panel);
+        View diaryMainDiv = diaryDetailView.findViewById(R.id.diary_main_div);
         slideAnimator = ValueAnimator.ofFloat(0, 5);
         slideAnimator.addUpdateListener(animation -> {
             float currentValue = (float) animation.getAnimatedValue();
-            diaryDetailPanel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
-            diaryDetailPanel.requestLayout();
+            diaryMainDiv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
+            diaryMainDiv.requestLayout();
         });
         slideAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
