@@ -56,24 +56,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     // 滑动动画
     private final ValueAnimator slideAnimator;
 
-    private void sliderStart(View view) {
-        slideAnimator.addUpdateListener(animation -> {
-            float currentValue = (float) animation.getAnimatedValue();
-            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
-            view.requestLayout();
-        });
-        slideAnimator.start();
-    }
-
-    private void sliderReverse(View view) {
-        slideAnimator.addUpdateListener(animation -> {
-            float currentValue = (float) animation.getAnimatedValue();
-            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
-            view.requestLayout();
-        });
-        slideAnimator.reverse();
-    }
-
     /**
      * 构造函数
      */
@@ -88,11 +70,11 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         // 弹出层滑动动画
         View diaryDetailPanel = diaryDetailView.findViewById(R.id.diary_detail_panel);
         slideAnimator = ValueAnimator.ofFloat(0, 5);
-        //slideAnimator.addUpdateListener(animation -> {
-        //    float currentValue = (float) animation.getAnimatedValue();
-        //    diaryDetailPanel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
-        //    diaryDetailPanel.requestLayout();
-        //});
+        slideAnimator.addUpdateListener(animation -> {
+            float currentValue = (float) animation.getAnimatedValue();
+            diaryDetailPanel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
+            diaryDetailPanel.requestLayout();
+        });
         slideAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -102,7 +84,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 if (currentValue == 0) {
                     diaryDetailView.setVisibility(View.GONE);
                 }
-                slideAnimator.removeAllUpdateListeners();
             }
         });
     }
@@ -185,8 +166,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     diaryEditorPanel.setVisibility(View.GONE);
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
-                        //slideAnimator.reverse();
-                        sliderReverse(diaryDetailPanel);
+                        slideAnimator.reverse();
                         reloadDiaryList();
                     });
                     AndroidUtils.toast(context, "保存成功");
@@ -196,14 +176,14 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> AndroidUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
                 if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
                     // 如果是新建日记，点取消直接把弹出层关了
-                    sliderReverse(diaryEditorPanel);
+                    slideAnimator.reverse();
                 } else if (viewType == DiaryPreview.VIEW_TYPE_NORMAL) {
                     // 其他情况从编辑态回到展示态
                     diaryDetailPanel.setVisibility(View.VISIBLE);
                     diaryEditorPanel.setVisibility(View.GONE);
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
-                        sliderReverse(diaryDetailPanel);
+                        slideAnimator.reverse();
                         reloadDiaryList();
                     });
                 }
@@ -216,19 +196,18 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 diaryEditorPanel.setVisibility(View.VISIBLE);
                 // 编辑态点击蒙层不关闭页面 而是让编辑框失焦
                 diaryShade.setOnClickListener(u -> diaryEditorText.clearFocus());
-                sliderStart(diaryEditorPanel);
             } else if (viewType == DiaryPreview.VIEW_TYPE_NORMAL) {
                 diaryDetailPanel.setVisibility(View.VISIBLE);
                 diaryEditorPanel.setVisibility(View.GONE);
                 // 展示态点击蒙层关闭页面
                 diaryShade.setOnClickListener(w -> {
-                    sliderReverse(diaryDetailPanel);
+                    slideAnimator.reverse();
                     reloadDiaryList();
                 });
-                sliderStart(diaryDetailPanel);
             }
-            // 显示弹出层
+            // 显示该弹出层
             diaryDetailView.setVisibility(View.VISIBLE);
+            slideAnimator.start();
         });
 
         // 列表项滑动事件
