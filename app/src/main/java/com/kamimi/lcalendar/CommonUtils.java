@@ -21,7 +21,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class Utils {
+/**
+ * 常用工具类
+ */
+public class CommonUtils {
 
     private static final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 

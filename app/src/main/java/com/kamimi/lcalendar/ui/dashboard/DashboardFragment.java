@@ -26,11 +26,9 @@ public class DashboardFragment extends Fragment {
         binding.diaryList.setLayoutManager(mLayoutManager);
         DiaryListAdapter adapter = new DiaryListAdapter(getContext(), binding.diaryList, binding.diaryDetail);
         binding.diaryList.setAdapter(adapter);
-
+        // 屏蔽掉弹出层的点击事件
         binding.diaryDetail.setOnClickListener(v -> {
-            // 屏蔽掉弹出层的点击事件
         });
-
         // 展示日记列表内容
         adapter.reloadDiaryList();
 

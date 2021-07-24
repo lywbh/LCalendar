@@ -5,8 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.text.Editable;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,10 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.elyeproj.loaderviewlibrary.LoaderTextView;
-import com.kamimi.lcalendar.AndroidUtils;
+import com.kamimi.lcalendar.DialogUtils;
 import com.kamimi.lcalendar.R;
-import com.kamimi.lcalendar.Utils;
+import com.kamimi.lcalendar.CommonUtils;
 import com.kamimi.lcalendar.obj.DiaryPreview;
+import com.kamimi.lcalendar.obj.FontLoader;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -48,10 +49,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
      */
     private final List<DiaryPreview> mPreviews;
 
-    // 字体
-    private final Typeface ldzsFont;
-    private final Typeface laksFont;
-
     // 滑动动画
     private final ValueAnimator slideAnimator;
 
@@ -64,8 +61,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         this.diaryDetailView = diaryDetailView;
         this.mInflater = LayoutInflater.from(context);
         this.mPreviews = new ArrayList<>();
-        ldzsFont = Typeface.createFromAsset(context.getAssets(), "fonts/ldzs.ttf");
-        laksFont = Typeface.createFromAsset(context.getAssets(), "fonts/LaksOner.ttf");
         // 弹出层滑动动画
         View diaryMainDiv = diaryDetailView.findViewById(R.id.diary_main_div);
         slideAnimator = ValueAnimator.ofFloat(0, 5);
@@ -98,7 +93,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         Arrays.sort(dateList);
         // 插入列表项
         mPreviews.clear();
-        String todayStr = Utils.dateFormat(new Date(), "yyyy-M-dd");
+        String todayStr = CommonUtils.dateFormat(new Date(), "yyyy-M-dd");
         if (dateList.length <= 0 || !todayStr.equals(dateList[dateList.length - 1])) {
             // 今天还没有日记，先生成一个空项放最前面
             mPreviews.add(DiaryPreview.createVirtual(todayStr));
@@ -112,7 +107,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     }
 
     // 滑动相关参数
-    private float touchStartPosX, touchStartWeight;
+    private volatile float touchStartPosX, touchStartWeight;
 
     @NonNull
     @Override
@@ -123,7 +118,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
 
         View viewItem = view.findViewById(R.id.diary_list_item); // 左侧的内容
         Button deleteButton = view.findViewWithTag("diary_delete_button"); // 右侧的删除按钮
-        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE); // // 日记数据库
+        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE); // 日记数据库
 
         // 列表项点击事件
         viewItem.setOnClickListener(v -> {
@@ -131,16 +126,17 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             View diaryEditorPanel = diaryDetailView.findViewById(R.id.diary_editor_panel);
             LoaderTextView diaryDetailText = diaryDetailPanel.findViewById(R.id.diary_detail_text);
             EditText diaryEditorText = diaryEditorPanel.findViewById(R.id.diary_editor_text);
-            diaryDetailText.setTypeface(ldzsFont);
-            diaryEditorText.setTypeface(ldzsFont);
+            diaryDetailText.setTypeface(FontLoader.ldzsFont);
+            diaryEditorText.setTypeface(FontLoader.ldzsFont);
             View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
             // 日记内容填充到界面上
             String date = ((TextView) v.findViewWithTag("diary_date")).getText().toString();
             String content = diarySp.getString(date, "");
             diaryDetailText.setText(content);
-            // 编辑框失焦时隐藏软键盘
+            // 编辑框焦点变更
             diaryEditorText.setOnFocusChangeListener((v1, hasFocus) -> {
                 if (!hasFocus) {
+                    // 失焦时关闭软键盘
                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(diaryEditorText.getWindowToken(), 0);
                 }
@@ -157,7 +153,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             diaryEditorPanel.findViewById(R.id.diary_submit_button).setOnClickListener(w -> {
                 Editable editorText = diaryEditorText.getText();
                 if (editorText.length() == 0) {
-                    AndroidUtils.toast(context, "写点什么再保存吧~");
+                    DialogUtils.toast(context, "写点什么再保存吧~");
                 } else {
                     diarySp.edit().putString(date, editorText.toString()).apply();
                     diaryDetailText.setText(editorText);
@@ -168,11 +164,11 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                         slideAnimator.reverse();
                         reloadDiaryList();
                     });
-                    AndroidUtils.toast(context, "保存成功");
+                    DialogUtils.toast(context, "保存成功");
                 }
             });
             // 点击取消
-            diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> AndroidUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
+            diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
                 if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
                     // 如果是新建日记，点取消直接把弹出层关了
                     slideAnimator.reverse();
@@ -186,7 +182,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                         reloadDiaryList();
                     });
                 }
-            }, (dialog, which) -> {
             }));
             // 新建日记进入编辑态，否则进入展示态
             if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
@@ -286,7 +281,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 return true;
             });
             // 点击删除按钮
-            deleteButton.setOnClickListener(button -> AndroidUtils.confirmDialog(context, "要删除这篇日记吗？", (dialog, which) -> {
+            deleteButton.setOnClickListener(button -> DialogUtils.confirmDialog(context, "要删除这篇日记吗？", (dialog, which) -> {
                 // 隐藏刚才划出来的删除按钮
                 float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
                 toggleWeightAnim(deleteButton, currentWeight, 0);
@@ -294,7 +289,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
                 diarySp.edit().remove(date).apply();
                 int deletePos = holder.getAbsoluteAdapterPosition();
-                if (Utils.dateFormat(new Date(), "yyyy-M-dd").equals(date)) {
+                if (CommonUtils.dateFormat(new Date(), "yyyy-M-dd").equals(date)) {
                     // 删掉的如果是今天的日记，复原一个虚拟项
                     mPreviews.set(deletePos, DiaryPreview.createVirtual(date));
                     notifyItemChanged(deletePos);
@@ -302,7 +297,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     mPreviews.remove(deletePos);
                     notifyItemRemoved(deletePos);
                 }
-            }, (dialog, which) -> {
             }));
         }
 
@@ -329,11 +323,22 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     public void onBindViewHolder(DiaryViewHolder holder, int position) {
         TextView dateText = holder.diaryItem.findViewWithTag("diary_date");
         TextView previewText = holder.diaryItem.findViewWithTag("diary_preview");
-        dateText.setTypeface(laksFont);
-        dateText.setText(mPreviews.get(position).getDate());
-        previewText.setTypeface(ldzsFont);
-        String content = BLANK_GAP + mPreviews.get(position).getContent();
-        previewText.setText(content);
+        // 设置字体
+        dateText.setTypeface(FontLoader.laksFont);
+        previewText.setTypeface(FontLoader.ldzsFont);
+        // 取内容
+        DiaryPreview mPreview = mPreviews.get(position);
+        if (mPreview.getType() == DiaryPreview.VIEW_TYPE_VIRTUAL) {
+            // 展示虚拟项
+            previewText.setText(mPreview.getContent());
+            previewText.setGravity(Gravity.CENTER);
+        } else if (mPreview.getType() == DiaryPreview.VIEW_TYPE_NORMAL) {
+            // 展示普通日记项
+            dateText.setText(mPreview.getDate());
+            String content = BLANK_GAP + mPreview.getContent();
+            previewText.setText(content);
+            previewText.setGravity(Gravity.START);
+        }
     }
 
     @Override

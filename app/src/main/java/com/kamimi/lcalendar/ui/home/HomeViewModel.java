@@ -6,7 +6,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.kamimi.lcalendar.Utils;
+import com.kamimi.lcalendar.CommonUtils;
 
 import org.json.JSONObject;
 
@@ -23,13 +23,13 @@ public class HomeViewModel extends ViewModel {
     public HomeViewModel() {
         Calendar calendar = Calendar.getInstance();
         titleText = new MutableLiveData<>();
-        titleText.setValue(Utils.monthToEn(calendar.get(Calendar.MONTH)) + "  " + calendar.get(Calendar.YEAR));
+        titleText.setValue(CommonUtils.monthToEn(calendar.get(Calendar.MONTH)) + "  " + calendar.get(Calendar.YEAR));
         mText = new MutableLiveData<>();
         hText = new MutableLiveData<>();
 
-        Utils.submitTask(() -> {
+        CommonUtils.submitTask(() -> {
             try {
-                JSONObject holidayJson = Utils.httpGet("http://timor.tech/api/holiday/tts/");
+                JSONObject holidayJson = CommonUtils.httpGet("http://timor.tech/api/holiday/tts/");
                 if (holidayJson.getInt("code") != 0) {
                     throw new NetworkErrorException("返回码不正确：" + holidayJson);
                 }
@@ -39,7 +39,7 @@ public class HomeViewModel extends ViewModel {
                 mText.postValue("获取今天的数据出现了一些问题哟。");
             }
             try {
-                JSONObject hitokotoJson = Utils.httpGet("https://v1.hitokoto.cn/");
+                JSONObject hitokotoJson = CommonUtils.httpGet("https://v1.hitokoto.cn/");
                 hText.postValue(BLANK_GAP + hitokotoJson.getString("hitokoto")
                         + "——" + hitokotoJson.getString("from"));
             } catch (Exception e) {

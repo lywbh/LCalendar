@@ -6,9 +6,9 @@ import android.content.DialogInterface;
 import android.widget.Toast;
 
 /**
- * 安卓工具类
+ * 系统弹窗工具类
  */
-public class AndroidUtils {
+public class DialogUtils {
 
     /**
      * 信息
@@ -35,6 +35,14 @@ public class AndroidUtils {
         bb.setMessage(message);
         bb.setPositiveButton(positiveText, positiveHandler);
         bb.show();
+    }
+
+    /**
+     * 确认框（无标题&默认按钮&只定义确认按钮的回调）
+     */
+    public static void confirmDialog(Context context, String message,
+                                     DialogInterface.OnClickListener positiveHandler) {
+        confirmDialog(context, null, message, positiveHandler, null);
     }
 
     /**

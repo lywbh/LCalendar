@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="40dp"
-        android:scrollbars="vertical"></androidx.recyclerview.widget.RecyclerView>
+        android:scrollbars="vertical" />
 
     <!--弹出层一定要放在最后面才会显示在最上层，同时默认隐藏-->
     <LinearLayout

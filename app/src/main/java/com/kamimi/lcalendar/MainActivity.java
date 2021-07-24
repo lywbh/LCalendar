@@ -13,6 +13,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.kamimi.lcalendar.databinding.ActivityMainBinding;
+import com.kamimi.lcalendar.obj.FontLoader;
 
 import java.io.IOException;
 
@@ -41,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        //加载字体
+        FontLoader.loadAll(this);
         //随机轮换壁纸
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             setBackground();
@@ -64,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private void prepareBackground() {
         try {
             String[] bgNames = assetManager.list("background");
-            String bgName = Utils.randomFrom(bgNames);
+            String bgName = CommonUtils.randomFrom(bgNames);
             nextBackground = Drawable.createFromStream(assetManager.open("background/" + bgName), bgName);
         } catch (IOException e) {
             Log.e("ERROR", "background fetch error", e);

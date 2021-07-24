@@ -11,7 +11,7 @@ import android.view.animation.AnimationUtils;
 
 import com.kamimi.lcalendar.Day;
 import com.kamimi.lcalendar.R;
-import com.kamimi.lcalendar.Utils;
+import com.kamimi.lcalendar.CommonUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -178,7 +178,7 @@ public class CalendarView extends View {
         // 按住了delay时间以上，画爱心/取消
         float x = event.getX();
         float y = event.getY();
-        return Utils.submitDelay(new TimerTask() {
+        return CommonUtils.submitDelay(new TimerTask() {
             @Override
             public void run() {
                 SharedPreferences markSp = context.getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
@@ -187,7 +187,7 @@ public class CalendarView extends View {
                 if (newCalendar == null) {
                     return;
                 }
-                String day = Utils.dateFormat(newCalendar.getTime(), "yyyy-M-dd");
+                String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-dd");
                 SharedPreferences.Editor editor = markSp.edit();
                 if (markSp.contains(day)) {
                     editor.remove(day);
