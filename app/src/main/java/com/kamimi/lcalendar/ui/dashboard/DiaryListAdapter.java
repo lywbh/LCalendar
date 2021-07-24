@@ -130,7 +130,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             diaryEditorText.setTypeface(FontLoader.ldzsFont);
             View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
             // 日记内容填充到界面上
-            String date = ((TextView) v.findViewWithTag("diary_date")).getText().toString();
+            String date = mPreviews.get(holder.getBindingAdapterPosition()).getDate();
             String content = diarySp.getString(date, "");
             diaryDetailText.setText(content);
             // 编辑框焦点变更
@@ -288,7 +288,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 // 删除数据库
                 String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
                 diarySp.edit().remove(date).apply();
-                int deletePos = holder.getAbsoluteAdapterPosition();
+                int deletePos = holder.getBindingAdapterPosition();
                 if (CommonUtils.dateFormat(new Date(), "yyyy-M-dd").equals(date)) {
                     // 删掉的如果是今天的日记，复原一个虚拟项
                     mPreviews.set(deletePos, DiaryPreview.createVirtual(date));
