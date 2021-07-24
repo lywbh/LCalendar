@@ -16,12 +16,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.elyeproj.loaderviewlibrary.LoaderTextView;
+import com.kamimi.lcalendar.AndroidUtils;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.Utils;
 import com.kamimi.lcalendar.obj.DiaryPreview;
@@ -43,7 +43,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     private final View diaryDetailView;
     private final LayoutInflater mInflater;
 
-    /** 操作这个即可控制列表项内容 */
+    /**
+     * 操作这个即可控制列表项内容
+     */
     private final List<DiaryPreview> mPreviews;
 
     // 字体
@@ -53,6 +55,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     // 滑动动画
     private final ValueAnimator slideAnimator;
 
+    /**
+     * 构造函数
+     */
     public DiaryListAdapter(Context context, RecyclerView recyclerView, View diaryDetailView) {
         this.context = context;
         this.recyclerView = recyclerView;
@@ -107,7 +112,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     // 滑动相关参数
-    private volatile float startPosX;
+    private volatile float touchStartPosX, touchStartWeight;
 
     @NonNull
     @Override
@@ -126,9 +131,8 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             diaryDetailText.setTypeface(ldzsFont);
             diaryEditorText.setTypeface(ldzsFont);
             View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
-            // 内容填充到详情页
+            // 日记内容填充到界面上
             String date = ((TextView) v.findViewWithTag("diary_date")).getText().toString();
-            // 从数据库获取当天的日记内容
             String content = diarySp.getString(date, "记录下你的愿望吧~");
             diaryDetailText.setText(content);
             // 编辑框失焦时隐藏软键盘
@@ -143,37 +147,39 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                 diaryEditorText.setText(diaryDetailText.getText());
                 diaryDetailPanel.setVisibility(View.GONE);
                 diaryEditorPanel.setVisibility(View.VISIBLE);
-                // 编辑态点击蒙层 编辑框失焦
+                // 编辑态点击蒙层不关闭页面 而是让编辑框失焦
                 diaryShade.setOnClickListener(u -> diaryEditorText.clearFocus());
             });
             // 点击保存
             diaryEditorPanel.findViewById(R.id.diary_submit_button).setOnClickListener(w -> {
                 Editable editorText = diaryEditorText.getText();
                 if (editorText.length() == 0) {
-                    Toast.makeText(context, "写点什么再保存吧~", Toast.LENGTH_SHORT).show();
+                    // TODO 这个弹不出来 要看看为啥
+                    AndroidUtils.toast(context, "写点什么再保存吧~");
                 } else {
                     diarySp.edit().putString(date, editorText.toString()).apply();
                     diaryDetailText.setText(editorText);
                     diaryDetailPanel.setVisibility(View.VISIBLE);
                     diaryEditorPanel.setVisibility(View.GONE);
-                    // 默认点击蒙层关闭页面
+                    // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
                         slideAnimator.reverse();
                         reloadDiaryList();
                     });
+                    AndroidUtils.toast(context, "保存成功");
                 }
             });
             // 点击取消
             diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> {
                 diaryDetailPanel.setVisibility(View.VISIBLE);
                 diaryEditorPanel.setVisibility(View.GONE);
-                // 默认点击蒙层关闭页面
+                // 展示态点击蒙层关闭页面
                 diaryShade.setOnClickListener(u -> {
                     slideAnimator.reverse();
                     reloadDiaryList();
                 });
             });
-            // 默认点击蒙层关闭页面
+            // 展示态点击蒙层关闭页面
             diaryShade.setOnClickListener(w -> {
                 slideAnimator.reverse();
                 reloadDiaryList();
@@ -200,12 +206,13 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                             }
                         }
                     }
-                    startPosX = event.getX();
+                    // 记录触摸起点和触摸时按钮的宽度
+                    touchStartPosX = event.getX();
+                    touchStartWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    // TODO 重复拖出同一项 动画不好看需要优化
-                    float weight = (startPosX - event.getX()) / 62;
                     // 按钮最多拖到长度为3，太长了不好看
+                    float weight = (touchStartPosX - event.getX()) / 62 + touchStartWeight;
                     if (weight > 3) weight = 3;
                     else if (weight < 0) weight = 0;
                     // 按钮跟随手指
@@ -213,7 +220,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                     deleteButton.requestLayout();
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (Math.abs(startPosX - event.getX()) < 10) {
+                    if (Math.abs(touchStartPosX - event.getX()) < 10) {
                         // 移动幅度很小则视为点击
                         deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0));
                         deleteButton.requestLayout();
@@ -230,17 +237,20 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             }
             return true;
         });
-        deleteButton.setOnClickListener(b -> {
-            // 删除数据，这里通过动画隐藏删除项，而不主动重绘整个列表
+        // 点击删除日记
+        deleteButton.setOnClickListener(button -> AndroidUtils.confirmDialog(context, null, "要删除这篇日记吗？", "确认", "取消", (dialog, which) -> {
+            // 这里通过动画隐藏删除项，而不主动重绘整个列表
             String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
             diarySp.edit().remove(date).apply();
-            // 设置删除项挤压动画
             toggleHeightAnim(view, view.getLayoutParams().height, 0);
-        });
+        }, (dialog, which) -> {
+        }));
         return new ViewHolder(view);
     }
 
-    // 权重滑动动画
+    /**
+     * 权重滑动动画
+     */
     private void toggleWeightAnim(View view, float startWeight, float endWeight) {
         ValueAnimator va = ValueAnimator.ofFloat(startWeight, endWeight);
         va.addUpdateListener(animation -> {
@@ -251,7 +261,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         va.start();
     }
 
-    // 高度滑动动画
+    /**
+     * 高度滑动动画
+     */
     private void toggleHeightAnim(View view, int startHeight, int endHeight) {
         ValueAnimator va = ValueAnimator.ofInt(startHeight, endHeight);
         va.addUpdateListener(animation -> {
@@ -264,6 +276,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         va.start();
     }
 
+    /**
+     * 列表的展示项和数据内容的绑定，修改数据即可刷新UI
+     */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         TextView dateText = holder.item_tv.findViewWithTag("diary_date");

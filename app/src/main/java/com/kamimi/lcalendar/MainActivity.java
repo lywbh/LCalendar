@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,10 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
         assetManager = getAssets();
 
-        // 兼容新版本主线程内进行网络请求
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -53,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
         });
         // 高斯模糊动画
         blurAnimator = ValueAnimator.ofInt(0, 10);
-        blurAnimator.setDuration(300);
-        blurAnimator.setRepeatMode(ValueAnimator.RESTART);
         blurAnimator.addUpdateListener(animation -> {
             int currentValue = (int) animation.getAnimatedValue();
             binding.backgroundBlur.setBlurRadius(currentValue);
