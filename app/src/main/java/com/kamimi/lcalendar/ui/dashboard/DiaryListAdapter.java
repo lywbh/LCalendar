@@ -88,7 +88,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     public void reloadDiaryList() {
         // 日记数据库
         SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
-        //diarySp.edit().putString("2021-07-22", "2021-07-22").putString("2021-07-21", "2021-07-21").putString("2021-07-20", "2021-07-20").putString("2021-07-19", "2021-07-19").putString("2021-07-18", "2021-07-18").commit();
+        //diarySp.edit().putString("2021-7-22", "2021-7-22").putString("2021-7-21", "2021-7-21").putString("2021-7-20", "2021-7-20").putString("2021-7-19", "2021-7-19").putString("2021-7-18", "2021-7-18").commit();
         String[] dateList = diarySp.getAll().keySet().toArray(new String[0]);
         Arrays.sort(dateList);
         // 插入列表项

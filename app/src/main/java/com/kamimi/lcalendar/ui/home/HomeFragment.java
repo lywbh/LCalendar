@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +33,7 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
 
     private final LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
+    private final LruCache<String, Bitmap> sunPicCache = new LruCache<>(31);
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -54,6 +56,8 @@ public class HomeFragment extends Fragment {
         binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
         // 爱心记录
         SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
+        // 日记记录
+        SharedPreferences diarySp = getContext().getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
         //日历绘制回调
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
             @Override
@@ -98,15 +102,30 @@ public class HomeFragment extends Fragment {
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
                     }
                 }
+                // 画太阳
+                if (diarySp.contains(day.dateText)) {
+                    long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
+                    float[] randomPos = randomSunPos(randomSeed);
+                    Bitmap bitmap;
+                    if ((bitmap = sunPicCache.get(day.dateText)) == null) {
+                        // TODO 为啥只有一个角
+                        BitmapFactory.Options option = new BitmapFactory.Options();
+                        bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.sun, option);
+                        bitmap = randomSunRotate(randomSeed, bitmap);
+                        bitmap = randomSunSize(randomSeed, bitmap);
+                        sunPicCache.put(day.dateText, bitmap);
+                    }
+                    canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
+                }
                 // 画爱心
                 if (markSp.contains(day.dateText)) {
                     long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
-                    float[] randomPos = randomPos(randomSeed);
+                    float[] randomPos = randomHeartPos(randomSeed);
                     Bitmap bitmap;
                     if ((bitmap = heartPicCache.get(day.dateText)) == null) {
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);
-                        bitmap = randomRotate(randomSeed, bitmap);
-                        bitmap = randomSize(randomSeed, bitmap);
+                        bitmap = randomHeartRotate(randomSeed, bitmap);
+                        bitmap = randomHeartSize(randomSeed, bitmap);
                         heartPicCache.put(day.dateText, bitmap);
                     }
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
@@ -116,27 +135,53 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * 随机大小
+     * 太阳随机大小
      */
-    private Bitmap randomSize(long seed, Bitmap origin) {
+    private Bitmap randomSunSize(long seed, Bitmap origin) {
         int w = CommonUtils.randomInt(seed, 60, 70);
         int h = CommonUtils.randomInt(seed, 60, 70);
         return resizeBitmap(origin, w, h);
     }
 
     /**
-     * 随机偏移
+     * 太阳随机偏移
      */
-    private float[] randomPos(long seed) {
+    private float[] randomSunPos(long seed) {
+        float left = CommonUtils.randomFloat(seed, 15, 35);
+        float top = CommonUtils.randomFloat(seed, 65, 85);
+        return new float[]{left, top};
+    }
+
+    /**
+     * 太阳随机旋转
+     */
+    private Bitmap randomSunRotate(long seed, Bitmap origin) {
+        float alpha = CommonUtils.randomFloat(seed, 5, 45);
+        return rotateBitmap(origin, alpha);
+    }
+
+    /**
+     * 爱心随机大小
+     */
+    private Bitmap randomHeartSize(long seed, Bitmap origin) {
+        int w = CommonUtils.randomInt(seed, 60, 70);
+        int h = CommonUtils.randomInt(seed, 60, 70);
+        return resizeBitmap(origin, w, h);
+    }
+
+    /**
+     * 爱心随机偏移
+     */
+    private float[] randomHeartPos(long seed) {
         float left = CommonUtils.randomFloat(seed, 40, 60);
         float top = CommonUtils.randomFloat(seed, 25, 45);
         return new float[]{left, top};
     }
 
     /**
-     * 随机旋转
+     * 爱心随机旋转
      */
-    private Bitmap randomRotate(long seed, Bitmap origin) {
+    private Bitmap randomHeartRotate(long seed, Bitmap origin) {
         float alpha = CommonUtils.randomFloat(seed, 5, 45);
         return rotateBitmap(origin, alpha);
     }
