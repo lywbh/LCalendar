@@ -118,8 +118,10 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.diary_list_item_holder, parent, false);
+        ViewHolder holder = new ViewHolder(view);
         view.getLayoutParams().height = recyclerView.getHeight() / 4;
-        View viewItem = view.findViewById(R.id.diary_list_item);
+        View viewItem = view.findViewById(R.id.diary_list_item); // 左侧内容
+        Button deleteButton = view.findViewWithTag("diary_delete_button"); // 右侧删除按钮
         // 日记数据库
         SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
         // 点击列表项弹出层，并初始化内容和绑定各种点击事件
@@ -192,7 +194,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             slideAnimator.start();
         });
         // 滑动列表项，左滑显示删除按钮
-        Button deleteButton = view.findViewWithTag("diary_delete_button");
         viewItem.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -239,13 +240,14 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         });
         // 点击删除日记
         deleteButton.setOnClickListener(button -> AndroidUtils.confirmDialog(context, null, "要删除这篇日记吗？", "确认", "取消", (dialog, which) -> {
-            // 这里通过动画隐藏删除项，而不主动重绘整个列表
             String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
             diarySp.edit().remove(date).apply();
-            toggleHeightAnim(view, view.getLayoutParams().height, 0);
+            int deletePos = holder.getAbsoluteAdapterPosition();
+            mPreviews.remove(deletePos);
+            notifyItemRemoved(deletePos);
         }, (dialog, which) -> {
         }));
-        return new ViewHolder(view);
+        return holder;
     }
 
     /**
