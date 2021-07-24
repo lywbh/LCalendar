@@ -38,6 +38,22 @@ public class AndroidUtils {
     }
 
     /**
+     * 确认框（无标题&默认按钮）
+     */
+    public static void confirmDialog(Context context, String message,
+                                     DialogInterface.OnClickListener positiveHandler, DialogInterface.OnClickListener negativeHandler) {
+        confirmDialog(context, null, message, positiveHandler, negativeHandler);
+    }
+
+    /**
+     * 确认框（默认按钮）
+     */
+    public static void confirmDialog(Context context, String title, String message,
+                                     DialogInterface.OnClickListener positiveHandler, DialogInterface.OnClickListener negativeHandler) {
+        confirmDialog(context, title, message, "确认", "取消", positiveHandler, negativeHandler);
+    }
+
+    /**
      * 确认框
      */
     public static void confirmDialog(Context context, String title, String message,

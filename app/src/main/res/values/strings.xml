@@ -7,4 +7,5 @@
     <string name="diary_submit_confirm">写好啦</string>
     <string name="diary_edit">编辑</string>
     <string name="diary_delete">删除</string>
+    <string name="editor_hint">写下你的愿望吧~</string>
 </resources>

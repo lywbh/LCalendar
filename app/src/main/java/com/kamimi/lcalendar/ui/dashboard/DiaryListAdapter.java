@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,7 +36,7 @@ import java.util.List;
 
 import static com.kamimi.lcalendar.obj.GlobalConstants.BLANK_GAP;
 
-public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.ViewHolder> {
+public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.DiaryViewHolder> {
 
     private final Context context;
 
@@ -55,6 +56,24 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     // 滑动动画
     private final ValueAnimator slideAnimator;
 
+    private void sliderStart(View view) {
+        slideAnimator.addUpdateListener(animation -> {
+            float currentValue = (float) animation.getAnimatedValue();
+            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
+            view.requestLayout();
+        });
+        slideAnimator.start();
+    }
+
+    private void sliderReverse(View view) {
+        slideAnimator.addUpdateListener(animation -> {
+            float currentValue = (float) animation.getAnimatedValue();
+            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
+            view.requestLayout();
+        });
+        slideAnimator.reverse();
+    }
+
     /**
      * 构造函数
      */
@@ -69,11 +88,11 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         // 弹出层滑动动画
         View diaryDetailPanel = diaryDetailView.findViewById(R.id.diary_detail_panel);
         slideAnimator = ValueAnimator.ofFloat(0, 5);
-        slideAnimator.addUpdateListener(animation -> {
-            float currentValue = (float) animation.getAnimatedValue();
-            diaryDetailPanel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
-            diaryDetailPanel.requestLayout();
-        });
+        //slideAnimator.addUpdateListener(animation -> {
+        //    float currentValue = (float) animation.getAnimatedValue();
+        //    diaryDetailPanel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, currentValue));
+        //    diaryDetailPanel.requestLayout();
+        //});
         slideAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -83,6 +102,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                 if (currentValue == 0) {
                     diaryDetailView.setVisibility(View.GONE);
                 }
+                slideAnimator.removeAllUpdateListeners();
             }
         });
     }
@@ -101,30 +121,31 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         String todayStr = Utils.dateFormat(new Date(), "yyyy-M-dd");
         if (dateList.length <= 0 || !todayStr.equals(dateList[dateList.length - 1])) {
             // 今天还没有日记，先生成一个空项放最前面
-            mPreviews.add(new DiaryPreview(todayStr, "今天还没有写日记哟，点我开始吧~"));
+            mPreviews.add(DiaryPreview.createVirtual(todayStr));
         }
         for (int i = dateList.length - 1; i >= 0; --i) {
             // 日期从新到旧插入到列表中
-            String content = diarySp.getString(dateList[i], "出现了一些错误！");
-            mPreviews.add(new DiaryPreview(dateList[i], content));
+            String content = diarySp.getString(dateList[i], "");
+            mPreviews.add(DiaryPreview.createNormal(dateList[i], content));
         }
         notifyDataSetChanged();
     }
 
     // 滑动相关参数
-    private volatile float touchStartPosX, touchStartWeight;
+    private float touchStartPosX, touchStartWeight;
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
+    public DiaryViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.diary_list_item_holder, parent, false);
-        ViewHolder holder = new ViewHolder(view);
-        view.getLayoutParams().height = recyclerView.getHeight() / 4;
-        View viewItem = view.findViewById(R.id.diary_list_item); // 左侧内容
-        Button deleteButton = view.findViewWithTag("diary_delete_button"); // 右侧删除按钮
-        // 日记数据库
-        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
-        // 点击列表项弹出层，并初始化内容和绑定各种点击事件
+        view.getLayoutParams().height = recyclerView.getHeight() / 5; // 列表项高度
+        DiaryViewHolder holder = new DiaryViewHolder(view); // 创建holder
+
+        View viewItem = view.findViewById(R.id.diary_list_item); // 左侧的内容
+        Button deleteButton = view.findViewWithTag("diary_delete_button"); // 右侧的删除按钮
+        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE); // // 日记数据库
+
+        // 列表项点击事件
         viewItem.setOnClickListener(v -> {
             View diaryDetailPanel = diaryDetailView.findViewById(R.id.diary_detail_panel);
             View diaryEditorPanel = diaryDetailView.findViewById(R.id.diary_editor_panel);
@@ -135,7 +156,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
             // 日记内容填充到界面上
             String date = ((TextView) v.findViewWithTag("diary_date")).getText().toString();
-            String content = diarySp.getString(date, "记录下你的愿望吧~");
+            String content = diarySp.getString(date, "");
             diaryDetailText.setText(content);
             // 编辑框失焦时隐藏软键盘
             diaryEditorText.setOnFocusChangeListener((v1, hasFocus) -> {
@@ -156,7 +177,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             diaryEditorPanel.findViewById(R.id.diary_submit_button).setOnClickListener(w -> {
                 Editable editorText = diaryEditorText.getText();
                 if (editorText.length() == 0) {
-                    // TODO 这个弹不出来 要看看为啥
                     AndroidUtils.toast(context, "写点什么再保存吧~");
                 } else {
                     diarySp.edit().putString(date, editorText.toString()).apply();
@@ -165,88 +185,149 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                     diaryEditorPanel.setVisibility(View.GONE);
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
-                        slideAnimator.reverse();
+                        //slideAnimator.reverse();
+                        sliderReverse(diaryDetailPanel);
                         reloadDiaryList();
                     });
                     AndroidUtils.toast(context, "保存成功");
                 }
             });
             // 点击取消
-            diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> {
+            diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> AndroidUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
+                if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
+                    // 如果是新建日记，点取消直接把弹出层关了
+                    sliderReverse(diaryEditorPanel);
+                } else if (viewType == DiaryPreview.VIEW_TYPE_NORMAL) {
+                    // 其他情况从编辑态回到展示态
+                    diaryDetailPanel.setVisibility(View.VISIBLE);
+                    diaryEditorPanel.setVisibility(View.GONE);
+                    // 展示态点击蒙层关闭页面
+                    diaryShade.setOnClickListener(u -> {
+                        sliderReverse(diaryDetailPanel);
+                        reloadDiaryList();
+                    });
+                }
+            }, (dialog, which) -> {
+            }));
+            // 新建日记进入编辑态，否则进入展示态
+            if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
+                diaryEditorText.setText("");
+                diaryDetailPanel.setVisibility(View.GONE);
+                diaryEditorPanel.setVisibility(View.VISIBLE);
+                // 编辑态点击蒙层不关闭页面 而是让编辑框失焦
+                diaryShade.setOnClickListener(u -> diaryEditorText.clearFocus());
+                sliderStart(diaryEditorPanel);
+            } else if (viewType == DiaryPreview.VIEW_TYPE_NORMAL) {
                 diaryDetailPanel.setVisibility(View.VISIBLE);
                 diaryEditorPanel.setVisibility(View.GONE);
                 // 展示态点击蒙层关闭页面
-                diaryShade.setOnClickListener(u -> {
-                    slideAnimator.reverse();
+                diaryShade.setOnClickListener(w -> {
+                    sliderReverse(diaryDetailPanel);
                     reloadDiaryList();
                 });
-            });
-            // 展示态点击蒙层关闭页面
-            diaryShade.setOnClickListener(w -> {
-                slideAnimator.reverse();
-                reloadDiaryList();
-            });
-            // 默认展示详情页，屏蔽编辑页
-            diaryDetailPanel.setVisibility(View.VISIBLE);
-            diaryEditorPanel.setVisibility(View.GONE);
-            // 显示该弹出层
+                sliderStart(diaryDetailPanel);
+            }
+            // 显示弹出层
             diaryDetailView.setVisibility(View.VISIBLE);
-            slideAnimator.start();
         });
-        // 滑动列表项，左滑显示删除按钮
-        viewItem.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    // 触摸开始时隐藏其他的删除按钮
-                    for (int i = 0; i < recyclerView.getChildCount(); i++) {
-                        Button button = recyclerView.getChildAt(i).findViewWithTag("diary_delete_button");
-                        if (button != deleteButton) {
-                            float buttonWeight = ((LinearLayout.LayoutParams) button.getLayoutParams()).weight;
-                            if (buttonWeight > 0) {
-                                toggleWeightAnim(button, buttonWeight, 0);
+
+        // 列表项滑动事件
+        if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
+            // 虚拟项，不允许左滑删除
+            viewItem.setOnTouchListener((v, event) -> {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // 触摸开始时隐藏其他的删除按钮
+                        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                            Button button = recyclerView.getChildAt(i).findViewWithTag("diary_delete_button");
+                            if (button != deleteButton) {
+                                float buttonWeight = ((LinearLayout.LayoutParams) button.getLayoutParams()).weight;
+                                if (buttonWeight > 0) {
+                                    toggleWeightAnim(button, buttonWeight, 0);
+                                }
                             }
                         }
-                    }
-                    // 记录触摸起点和触摸时按钮的宽度
-                    touchStartPosX = event.getX();
-                    touchStartWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    // 按钮最多拖到长度为3，太长了不好看
-                    float weight = (touchStartPosX - event.getX()) / 62 + touchStartWeight;
-                    if (weight > 3) weight = 3;
-                    else if (weight < 0) weight = 0;
-                    // 按钮跟随手指
-                    deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, weight));
-                    deleteButton.requestLayout();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (Math.abs(touchStartPosX - event.getX()) < 10) {
-                        // 移动幅度很小则视为点击
-                        deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0));
+                        // 记录触摸起点和触摸时按钮的宽度
+                        touchStartPosX = event.getX();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (Math.abs(touchStartPosX - event.getX()) < 10) {
+                            // 移动幅度很小则视为点击
+                            deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0));
+                            deleteButton.requestLayout();
+                            v.performClick();
+                        }
+                        break;
+                }
+                return true;
+            });
+        } else if (viewType == DiaryPreview.VIEW_TYPE_NORMAL) {
+            // 普通项，左滑显示删除按钮
+            viewItem.setOnTouchListener((v, event) -> {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // 触摸开始时隐藏其他的删除按钮
+                        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                            Button button = recyclerView.getChildAt(i).findViewWithTag("diary_delete_button");
+                            if (button != deleteButton) {
+                                float buttonWeight = ((LinearLayout.LayoutParams) button.getLayoutParams()).weight;
+                                if (buttonWeight > 0) {
+                                    toggleWeightAnim(button, buttonWeight, 0);
+                                }
+                            }
+                        }
+                        // 记录触摸起点和触摸时按钮的宽度
+                        touchStartPosX = event.getX();
+                        touchStartWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        // 按钮最多拖到长度为3，太长了不好看
+                        float weight = (touchStartPosX - event.getX()) / 62 + touchStartWeight;
+                        if (weight > 3) weight = 3;
+                        else if (weight < 0) weight = 0;
+                        // 按钮跟随手指
+                        deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, weight));
                         deleteButton.requestLayout();
-                        v.performClick();
-                    }
-                    // 注意这里没有break
-                case MotionEvent.ACTION_CANCEL:
-                    // 发生纵向移动或移出了边界，判断当前按钮挪出了多少，如果超过一半直接带出来，否则复位隐藏
-                    float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
-                    if (currentWeight >= 1.5) weight = 3;
-                    else weight = 0;
-                    toggleWeightAnim(deleteButton, currentWeight, weight);
-                    break;
-            }
-            return true;
-        });
-        // 点击删除日记
-        deleteButton.setOnClickListener(button -> AndroidUtils.confirmDialog(context, null, "要删除这篇日记吗？", "确认", "取消", (dialog, which) -> {
-            String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
-            diarySp.edit().remove(date).apply();
-            int deletePos = holder.getAbsoluteAdapterPosition();
-            mPreviews.remove(deletePos);
-            notifyItemRemoved(deletePos);
-        }, (dialog, which) -> {
-        }));
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (Math.abs(touchStartPosX - event.getX()) < 10) {
+                            // 移动幅度很小则视为点击
+                            deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0));
+                            deleteButton.requestLayout();
+                            v.performClick();
+                        }
+                        // 注意这里没有break
+                    case MotionEvent.ACTION_CANCEL:
+                        // 发生纵向移动或移出了边界，判断当前按钮挪出了多少，如果超过一半直接带出来，否则复位隐藏
+                        float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
+                        if (currentWeight >= 1.5) weight = 3;
+                        else weight = 0;
+                        toggleWeightAnim(deleteButton, currentWeight, weight);
+                        break;
+                }
+                return true;
+            });
+            // 点击删除按钮
+            deleteButton.setOnClickListener(button -> AndroidUtils.confirmDialog(context, "要删除这篇日记吗？", (dialog, which) -> {
+                // 隐藏刚才划出来的删除按钮
+                float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
+                toggleWeightAnim(deleteButton, currentWeight, 0);
+                // 删除数据库
+                String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
+                diarySp.edit().remove(date).apply();
+                int deletePos = holder.getAbsoluteAdapterPosition();
+                if (Utils.dateFormat(new Date(), "yyyy-M-dd").equals(date)) {
+                    // 删掉的如果是今天的日记，复原一个虚拟项
+                    mPreviews.set(deletePos, DiaryPreview.createVirtual(date));
+                    notifyItemChanged(deletePos);
+                } else {
+                    mPreviews.remove(deletePos);
+                    notifyItemRemoved(deletePos);
+                }
+            }, (dialog, which) -> {
+            }));
+        }
+
         return holder;
     }
 
@@ -264,27 +345,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     /**
-     * 高度滑动动画
-     */
-    private void toggleHeightAnim(View view, int startHeight, int endHeight) {
-        ValueAnimator va = ValueAnimator.ofInt(startHeight, endHeight);
-        va.addUpdateListener(animation -> {
-            int currentValue = (int) animation.getAnimatedValue();
-            ViewGroup.LayoutParams layoutParam = view.getLayoutParams();
-            layoutParam.height = currentValue;
-            view.setLayoutParams(layoutParam);
-            view.requestLayout();
-        });
-        va.start();
-    }
-
-    /**
      * 列表的展示项和数据内容的绑定，修改数据即可刷新UI
      */
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        TextView dateText = holder.item_tv.findViewWithTag("diary_date");
-        TextView previewText = holder.item_tv.findViewWithTag("diary_preview");
+    public void onBindViewHolder(DiaryViewHolder holder, int position) {
+        TextView dateText = holder.diaryItem.findViewWithTag("diary_date");
+        TextView previewText = holder.diaryItem.findViewWithTag("diary_preview");
         dateText.setTypeface(laksFont);
         dateText.setText(mPreviews.get(position).getDate());
         previewText.setTypeface(ldzsFont);
@@ -297,12 +363,17 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         return mPreviews.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public LinearLayout item_tv;
+    @Override
+    public int getItemViewType(int position) {
+        return mPreviews.get(position).getType();
+    }
 
-        public ViewHolder(View view) {
+    public static class DiaryViewHolder extends RecyclerView.ViewHolder {
+        public LinearLayout diaryItem;
+
+        public DiaryViewHolder(View view) {
             super(view);
-            item_tv = view.findViewById(R.id.diary_list_item);
+            diaryItem = view.findViewById(R.id.diary_list_item);
         }
     }
 
