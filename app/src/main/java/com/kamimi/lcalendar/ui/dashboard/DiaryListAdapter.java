@@ -351,7 +351,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         return mPreviews.get(position).getType();
     }
 
-    public static class DiaryViewHolder extends RecyclerView.ViewHolder {
+    static class DiaryViewHolder extends RecyclerView.ViewHolder {
         public LinearLayout diaryItem;
 
         public DiaryViewHolder(View view) {
