@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LCalendar</string>
+    <string name="app_name">我的日记</string>
     <string name="title_home">日历</string>
     <string name="title_dashboard">日记</string>
     <string name="title_notifications">提醒</string>

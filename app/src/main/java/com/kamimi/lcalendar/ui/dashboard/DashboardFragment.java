@@ -16,6 +16,7 @@ public class DashboardFragment extends Fragment {
 
     private FragmentDashboardBinding binding;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
