@@ -7,10 +7,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.utils.FontLoader;
+import com.stone.pile.libs.PileLayout;
 
 public class NotificationsFragment extends Fragment {
 
@@ -21,8 +21,8 @@ public class NotificationsFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
 
-        NotificationsViewModel notificationsViewModel = new ViewModelProvider(this).get(NotificationsViewModel.class);
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), binding.textNotifications::setText);
+        PileLayout.Adapter adapter = new NotificationListAdapter();
+        binding.pileLayout.setAdapter(adapter);
 
         return binding.getRoot();
     }
