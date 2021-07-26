@@ -24,16 +24,13 @@ public class NotificationListAdapter extends PileLayout.Adapter {
 
     private final Context context;
 
-    private final PileLayout pileLayout;
-
     /**
      * 操作这个即可控制列表项内容
      */
     private final List<NotificationData> dataList;
 
-    public NotificationListAdapter(Context context, PileLayout pileLayout) {
+    public NotificationListAdapter(Context context) {
         this.context = context;
-        this.pileLayout = pileLayout;
         this.dataList = new ArrayList<>();
     }
 

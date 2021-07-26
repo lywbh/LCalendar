@@ -20,7 +20,7 @@ public class NotificationsFragment extends Fragment {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
 
         // 创建堆叠滑动列表
-        NotificationListAdapter adapter = new NotificationListAdapter(getContext(), binding.pileLayout);
+        NotificationListAdapter adapter = new NotificationListAdapter(getContext());
         binding.pileLayout.setAdapter(adapter);
         // 加载列表数据
         adapter.reloadDataList();
