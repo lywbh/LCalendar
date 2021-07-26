@@ -9,11 +9,6 @@ import lombok.ToString;
 @ToString
 public class NotificationData {
 
-    public enum NotifyType {
-        SINGLE, // 单次
-        DAILY   // 每日
-    }
-
     /**
      * 日期，yyyy-MM-dd
      */
@@ -30,18 +25,8 @@ public class NotificationData {
     private String content;
 
     /**
-     * 通知时间，hh:m:ss
+     * 通知时间，hh:m:ss，如果为null表示没有开启通知
      */
     private String notifyTime;
-
-    /**
-     * 通知类型
-     */
-    private NotifyType notifyType;
-
-    /**
-     * 是否打开通知
-     */
-    private boolean notifyOn;
 
 }

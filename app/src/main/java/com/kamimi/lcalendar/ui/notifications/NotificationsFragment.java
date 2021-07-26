@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
-import com.kamimi.lcalendar.utils.FontLoader;
 import com.stone.pile.libs.PileLayout;
 
 public class NotificationsFragment extends Fragment {
@@ -25,12 +24,6 @@ public class NotificationsFragment extends Fragment {
         binding.pileLayout.setAdapter(adapter);
 
         return binding.getRoot();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        binding.textNotifications.setTypeface(FontLoader.ldzsFont);
     }
 
 }
