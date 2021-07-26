@@ -1,12 +1,16 @@
 package com.kamimi.lcalendar.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Builder
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotificationData {
 
     /**

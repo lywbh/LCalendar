@@ -85,7 +85,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     /**
      * 刷新列表
      */
-    public void reloadDiaryList() {
+    public void reloadDataList() {
         // 日记数据库
         SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
         //diarySp.edit().putString("2021-7-22", "2021-7-22").putString("2021-7-21", "2021-7-21").putString("2021-7-20", "2021-7-20").putString("2021-7-19", "2021-7-19").putString("2021-7-18", "2021-7-18").commit();
@@ -162,7 +162,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
                         slideAnimator.reverse();
-                        reloadDiaryList();
+                        reloadDataList();
                     });
                     DialogUtils.toast(context, "保存成功");
                 }
@@ -179,7 +179,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
                         slideAnimator.reverse();
-                        reloadDiaryList();
+                        reloadDataList();
                     });
                 }
             }));
@@ -196,7 +196,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 // 展示态点击蒙层关闭页面
                 diaryShade.setOnClickListener(w -> {
                     slideAnimator.reverse();
-                    reloadDiaryList();
+                    reloadDataList();
                 });
             }
             // 显示该弹出层

@@ -21,6 +21,7 @@ public class DashboardFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
 
+        //创建滑动列表
         binding.diaryList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         mLayoutManager.setOrientation(RecyclerView.VERTICAL);
@@ -31,7 +32,7 @@ public class DashboardFragment extends Fragment {
         binding.diaryDetail.setOnClickListener(v -> {
         });
         // 展示日记列表内容
-        adapter.reloadDiaryList();
+        adapter.reloadDataList();
 
         return binding.getRoot();
     }

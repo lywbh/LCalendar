@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.github.mmin18:realtimeblurview:1.2.1'
     implementation 'io.github.elye:loaderviewlibrary:3.0.0'
+    implementation 'com.alibaba:fastjson:1.1.60.android'
     implementation (name:'pile-layout', ext:'aar')
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'

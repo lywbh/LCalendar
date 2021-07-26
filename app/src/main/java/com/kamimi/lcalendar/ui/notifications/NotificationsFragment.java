@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
-import com.stone.pile.libs.PileLayout;
 
 public class NotificationsFragment extends Fragment {
 
@@ -20,8 +19,11 @@ public class NotificationsFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
 
-        PileLayout.Adapter adapter = new NotificationListAdapter();
+        // 创建堆叠滑动列表
+        NotificationListAdapter adapter = new NotificationListAdapter(getContext(), binding.pileLayout);
         binding.pileLayout.setAdapter(adapter);
+        // 加载列表数据
+        adapter.reloadDataList();
 
         return binding.getRoot();
     }
