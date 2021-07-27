@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.elyeproj.loaderviewlibrary.LoaderTextView;
+import com.kamimi.lcalendar.utils.AnimUtils;
 import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.utils.CommonUtils;
@@ -217,7 +218,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                             if (button != deleteButton) {
                                 float buttonWeight = ((LinearLayout.LayoutParams) button.getLayoutParams()).weight;
                                 if (buttonWeight > 0) {
-                                    toggleWeightAnim(button, buttonWeight, 0);
+                                    AnimUtils.toggleWeightAnim(button, buttonWeight, 0);
                                 }
                             }
                         }
@@ -246,7 +247,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                             if (button != deleteButton) {
                                 float buttonWeight = ((LinearLayout.LayoutParams) button.getLayoutParams()).weight;
                                 if (buttonWeight > 0) {
-                                    toggleWeightAnim(button, buttonWeight, 0);
+                                    AnimUtils.toggleWeightAnim(button, buttonWeight, 0);
                                 }
                             }
                         }
@@ -276,7 +277,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                         float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
                         if (currentWeight >= 1.5) weight = 3;
                         else weight = 0;
-                        toggleWeightAnim(deleteButton, currentWeight, weight);
+                        AnimUtils.toggleWeightAnim(deleteButton, currentWeight, weight);
                         break;
                 }
                 return true;
@@ -285,7 +286,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             deleteButton.setOnClickListener(button -> DialogUtils.confirmDialog(context, "要删除这篇日记吗？", (dialog, which) -> {
                 // 隐藏刚才划出来的删除按钮
                 float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
-                toggleWeightAnim(deleteButton, currentWeight, 0);
+                AnimUtils.toggleWeightAnim(deleteButton, currentWeight, 0);
                 // 删除数据库
                 String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
                 diarySp.edit().remove(date).apply();
@@ -302,19 +303,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         }
 
         return holder;
-    }
-
-    /**
-     * 权重滑动动画
-     */
-    private void toggleWeightAnim(View view, float startWeight, float endWeight) {
-        ValueAnimator va = ValueAnimator.ofFloat(startWeight, endWeight);
-        va.addUpdateListener(animation -> {
-            float currentValue = (float) animation.getAnimatedValue();
-            view.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, currentValue));
-            view.requestLayout();
-        });
-        va.start();
     }
 
     /**

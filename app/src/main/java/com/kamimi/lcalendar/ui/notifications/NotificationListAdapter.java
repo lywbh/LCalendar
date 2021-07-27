@@ -3,9 +3,13 @@ package com.kamimi.lcalendar.ui.notifications;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Editable;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
@@ -14,6 +18,7 @@ import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.obj.NotificationData;
+import com.kamimi.lcalendar.utils.AnimUtils;
 import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.stone.pile.libs.PileLayout;
@@ -73,17 +78,22 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     @Override
     public void bindView(View view, int index) {
         TextView dateView = view.findViewWithTag("notification_date");
-        //TextView switchView = view.findViewWithTag("notification_switch");
         TextView titleView = view.findViewWithTag("notification_title");
         TextView contentView = view.findViewWithTag("notification_content");
+        //TextView switchView = view.findViewWithTag("notification_switch");
+        Button deleteButton = view.findViewWithTag("notification_delete");
+
         dateView.setTypeface(FontLoader.ldzsFont);
         titleView.setTypeface(FontLoader.ldzsFont);
         contentView.setTypeface(FontLoader.ldzsFont);
+        deleteButton.setTypeface(FontLoader.ldzsFont);
+
         NotificationData dataItem = dataList.get(index);
         dateView.setText(dataItem.getDate());
-        //switchView.setText(dataItem.getNotifyTime());
         titleView.setText(dataItem.getTitle());
         contentView.setText(dataItem.getContent());
+        //switchView.setText(dataItem.getNotifyTime());
+
     }
 
     @Override
@@ -157,15 +167,15 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         binding.notificationCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> layerController.hideLayer()));
 
         binding.notificationEditorDate.setRange(DateEntity.target(1900, 1, 1), DateEntity.target(2099, 12, 31));
-        if (data != null) {
+        if (position < 0) {
+            binding.notificationEditorDate.setDefaultValue(DateEntity.today());
+            binding.notificationEditorTitle.setText("");
+            binding.notificationEditorContent.setText("");
+        } else {
             String[] dateSplit = data.getDate().split("-");
             binding.notificationEditorDate.setDefaultValue(DateEntity.target(Integer.parseInt(dateSplit[0]), Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[2])));
             binding.notificationEditorTitle.setText(data.getTitle());
             binding.notificationEditorContent.setText(data.getContent());
-        } else {
-            binding.notificationEditorDate.setDefaultValue(DateEntity.today());
-            binding.notificationEditorTitle.setText("");
-            binding.notificationEditorContent.setText("");
         }
         layerController.showLayer();
     }
