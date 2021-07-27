@@ -11,4 +11,5 @@
     <string name="add">添加</string>
     <string name="enter_notification_title">请输入日程标题</string>
     <string name="enter_notification_content">请输入日程内容</string>
+    <string name="enter_notification_date">请输入日期</string>
 </resources>

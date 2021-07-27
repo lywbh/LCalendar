@@ -21,7 +21,7 @@
         android:right="1dp"
         android:top="1dp">
         <bitmap
-            android:src="@drawable/ic_notification_img"
+            android:src="@drawable/ic_notification_background_img"
             android:tileMode="repeat" />
     </item>
 </layer-list>
