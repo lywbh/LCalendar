@@ -162,7 +162,10 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     // 展示态点击蒙层关闭页面
                     diaryShade.setOnClickListener(u -> {
                         slideAnimator.reverse();
-                        reloadDataList();
+                        // 通知列表项变化
+                        int position = holder.getBindingAdapterPosition();
+                        mPreviews.set(position, DiaryPreview.createNormal(date, editorText.toString()));
+                        notifyItemChanged(position);
                     });
                     DialogUtils.toast(context, "保存成功");
                 }
@@ -177,10 +180,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     diaryDetailPanel.setVisibility(View.VISIBLE);
                     diaryEditorPanel.setVisibility(View.GONE);
                     // 展示态点击蒙层关闭页面
-                    diaryShade.setOnClickListener(u -> {
-                        slideAnimator.reverse();
-                        reloadDataList();
-                    });
+                    diaryShade.setOnClickListener(u -> slideAnimator.reverse());
                 }
             }));
             // 新建日记进入编辑态，否则进入展示态
@@ -194,10 +194,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 diaryDetailPanel.setVisibility(View.VISIBLE);
                 diaryEditorPanel.setVisibility(View.GONE);
                 // 展示态点击蒙层关闭页面
-                diaryShade.setOnClickListener(w -> {
-                    slideAnimator.reverse();
-                    reloadDataList();
-                });
+                diaryShade.setOnClickListener(w -> slideAnimator.reverse());
             }
             // 显示该弹出层
             diaryDetailView.setVisibility(View.VISIBLE);
