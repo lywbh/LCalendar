@@ -25,19 +25,6 @@ public class DialogUtils {
     }
 
     /**
-     * 确认框，只有一个确认按钮
-     */
-    public static void confirmDialog(Context context, String title, String message,
-                                     String positiveText,
-                                     DialogInterface.OnClickListener positiveHandler) {
-        AlertDialog.Builder bb = new AlertDialog.Builder(context);
-        bb.setTitle(title);
-        bb.setMessage(message);
-        bb.setPositiveButton(positiveText, positiveHandler);
-        bb.show();
-    }
-
-    /**
      * 确认框（无标题&默认按钮&只定义确认按钮的回调）
      */
     public static void confirmDialog(Context context, String message,

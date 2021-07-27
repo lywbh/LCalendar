@@ -128,13 +128,21 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
 
         // 列表项点击事件
         viewItem.setOnClickListener(v -> {
+            // 详情页各种元素
             View diaryDetailPanel = diaryDetailView.findViewById(R.id.diary_detail_panel);
             View diaryEditorPanel = diaryDetailView.findViewById(R.id.diary_editor_panel);
             LoaderTextView diaryDetailText = diaryDetailPanel.findViewById(R.id.diary_detail_text);
             EditText diaryEditorText = diaryEditorPanel.findViewById(R.id.diary_editor_text);
+            Button diaryEditButton = diaryDetailPanel.findViewById(R.id.diary_edit_button);
+            Button diarySubmitButton = diaryEditorPanel.findViewById(R.id.diary_submit_button);
+            Button diaryCancelButton = diaryEditorPanel.findViewById(R.id.diary_cancel_button);
+            View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
+            // 设置详情页字体
             diaryDetailText.setTypeface(FontLoader.ldzsFont);
             diaryEditorText.setTypeface(FontLoader.ldzsFont);
-            View diaryShade = diaryDetailView.findViewById(R.id.diary_shade);
+            diaryEditButton.setTypeface(FontLoader.ldzsFont);
+            diarySubmitButton.setTypeface(FontLoader.ldzsFont);
+            diaryCancelButton.setTypeface(FontLoader.ldzsFont);
             // 日记内容填充到界面上
             String date = mPreviews.get(holder.getBindingAdapterPosition()).getDate();
             String content = diarySp.getString(date, "");
@@ -148,7 +156,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 }
             });
             // 点击编辑
-            diaryDetailPanel.findViewById(R.id.diary_edit_button).setOnClickListener(w -> {
+            diaryEditButton.setOnClickListener(w -> {
                 diaryEditorText.setText(diaryDetailText.getText());
                 diaryDetailPanel.setVisibility(View.GONE);
                 diaryEditorPanel.setVisibility(View.VISIBLE);
@@ -156,7 +164,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 diaryShade.setOnClickListener(u -> diaryEditorText.clearFocus());
             });
             // 点击保存
-            diaryEditorPanel.findViewById(R.id.diary_submit_button).setOnClickListener(w -> {
+            diarySubmitButton.setOnClickListener(w -> {
                 Editable editorText = diaryEditorText.getText();
                 if (editorText.length() == 0) {
                     DialogUtils.toast(context, "写点什么再保存吧~");
@@ -177,7 +185,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 }
             });
             // 点击取消
-            diaryEditorPanel.findViewById(R.id.diary_cancel_button).setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
+            diaryCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
                 if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
                     // 如果是新建日记，点取消直接把弹出层关了
                     slideAnimator.reverse();

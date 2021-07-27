@@ -3,30 +3,24 @@ package com.kamimi.lcalendar.ui.notifications;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Editable;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.obj.NotificationData;
-import com.kamimi.lcalendar.utils.AnimUtils;
 import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.stone.pile.libs.PileLayout;
 
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NotificationListAdapter extends PileLayout.Adapter {
@@ -38,31 +32,40 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     private final NotificationLayerController layerController;
 
     /**
+     * 日程数据库
+     */
+    private final SharedPreferences notificationSp;
+
+    /**
      * 操作这个即可控制列表项内容
      */
-    private List<NotificationData> dataList;
+    private final List<NotificationData> dataList;
 
     public NotificationListAdapter(Context context, FragmentNotificationsBinding binding, NotificationLayerController layerController) {
         this.context = context;
         this.binding = binding;
         this.layerController = layerController;
 
-        // 初始化数据
-        SharedPreferences notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
-        //notificationSp.edit().remove("LCalendarNotificationSp").commit();
-        Set<String> jsonStrSet = notificationSp.getStringSet("LCalendarNotificationSp", new HashSet<>());
-        this.dataList = jsonStrSet.stream()
-                .map(jsonStr -> JSON.toJavaObject(JSONObject.parseObject(jsonStr), NotificationData.class))
-                .sorted(Comparator.comparing(NotificationData::getDate))
-                .collect(Collectors.toList());
-    }
+        // 设置弹出层的字体
+        this.binding.notificationEditorDate.getYearWheelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorDate.getYearLabelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorDate.getMonthWheelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorDate.getMonthLabelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorDate.getDayWheelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorDate.getDayLabelView().setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorTitle.setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationEditorContent.setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationSubmitButton.setTypeface(FontLoader.ldzsFont);
+        this.binding.notificationCancelButton.setTypeface(FontLoader.ldzsFont);
 
-    /**
-     * 刷新UI
-     */
-    public void reloadDataList(List<NotificationData> dataList) {
-        this.dataList = dataList;
-        binding.pileLayout.notifyDataSetChanged();
+        // 初始化数据
+        notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
+        // notificationSp.edit().remove("LCalendarNotificationSp").commit();
+        String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
+        JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
+        this.dataList = jsonArr.stream()
+                .map(jsonObj -> JSON.toJavaObject((JSON) jsonObj, NotificationData.class))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -94,11 +97,16 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         contentView.setText(dataItem.getContent());
         //switchView.setText(dataItem.getNotifyTime());
 
-    }
-
-    @Override
-    public void displaying(int position) {
-        // TODO 滑到最前端时触发
+        deleteButton.setOnClickListener(v -> DialogUtils.confirmDialog(context, "要删除日程吗", (dialog, witch) -> {
+            // 删除数据
+            String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
+            JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
+            jsonArr.remove(index);
+            notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
+            // 更新UI
+            dataList.remove(index);
+            binding.pileLayout.notifyDataSetChanged();
+        }));
     }
 
     @Override
@@ -127,8 +135,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             binding.notificationEditorTitle.clearFocus();
             binding.notificationEditorContent.clearFocus();
         });
-        // 提醒数据库
-        SharedPreferences notificationSp = context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
         // 点击保存
         binding.notificationSubmitButton.setOnClickListener(w -> {
             Editable titleText = binding.notificationEditorTitle.getText();
@@ -136,11 +142,8 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                 DialogUtils.toast(context, "标题还没有填呢~");
             } else {
                 // 保存数据
-                Set<String> currentSet = notificationSp.getStringSet("LCalendarNotificationSp", new HashSet<>());
-                List<NotificationData> currentList = currentSet.stream()
-                        .map(jsonStr -> JSON.toJavaObject(JSONObject.parseObject(jsonStr), NotificationData.class))
-                        .sorted(Comparator.comparing(NotificationData::getDate))
-                        .collect(Collectors.toList());
+                String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
+                JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
                 NotificationData notificationData = NotificationData.builder()
                         .date(String.format("%s-%s-%s",
                                 binding.notificationEditorDate.getSelectedYear(),
@@ -150,15 +153,15 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                         .content(binding.notificationEditorContent.getText().toString())
                         .build();
                 if (position < 0) {
-                    currentList.add(notificationData);
+                    jsonArr.add(JSONObject.toJSON(notificationData));
+                    dataList.add(notificationData);
                 } else {
-                    currentList.set(position, notificationData);
+                    jsonArr.set(position, JSONObject.toJSON(notificationData));
+                    dataList.set(position, notificationData);
                 }
-                Set<String> newSet = currentList.stream().map(JSONObject::toJSONString).collect(Collectors.toSet());
-                notificationSp.edit().putStringSet("LCalendarNotificationSp", newSet).apply();
+                notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
                 // 刷新UI
-                reloadDataList(currentList);
-                // 关闭层
+                binding.pileLayout.notifyDataSetChanged();
                 DialogUtils.toast(context, "保存成功");
                 layerController.hideLayer();
             }
