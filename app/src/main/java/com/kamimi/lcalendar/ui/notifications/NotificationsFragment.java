@@ -1,35 +1,20 @@
 package com.kamimi.lcalendar.ui.notifications;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
-import com.kamimi.lcalendar.obj.NotificationData;
-import com.kamimi.lcalendar.utils.DialogUtils;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class NotificationsFragment extends Fragment {
 
@@ -37,21 +22,19 @@ public class NotificationsFragment extends Fragment {
 
     private NotificationListAdapter adapter;
 
-    private NotificationLayerController layerController;
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
 
+        // 显示右上角按钮
+        setHasOptionsMenu(true);
+
         // 弹出层控制器
-        layerController = new NotificationLayerController(this, binding);
+        NotificationLayerController layerController = new NotificationLayerController(this, binding);
         // 屏蔽掉弹出层的点击事件
         binding.notificationDetail.setOnClickListener(v -> {
         });
-
-        // 显示右上角按钮
-        setHasOptionsMenu(true);
         // 创建堆叠滑动列表
         adapter = new NotificationListAdapter(getContext(), binding, layerController);
         binding.pileLayout.setAdapter(adapter);
