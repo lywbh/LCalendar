@@ -65,12 +65,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
 
     @Override
     public void bindView(View view, int index) {
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-        if (viewHolder == null) {
-            viewHolder = new ViewHolder();
-            view.setTag(viewHolder);
-        }
-
         TextView dateView = view.findViewWithTag("notification_date");
         //TextView switchView = view.findViewWithTag("notification_switch");
         TextView titleView = view.findViewWithTag("notification_title");
@@ -89,9 +83,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     public void displaying(int position) {
         NotificationData data = dataList.get(position);
         Log.v(String.valueOf(position), JSONObject.toJSONString(data));
-    }
-
-    static class ViewHolder {
     }
 
 }
