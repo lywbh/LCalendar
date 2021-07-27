@@ -61,6 +61,10 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         this.diaryDetailView = diaryDetailView;
         this.mInflater = LayoutInflater.from(context);
         this.mPreviews = new ArrayList<>();
+
+        // 准备数据
+        loadDataList();
+
         // 弹出层滑动动画
         View diaryMainDiv = diaryDetailView.findViewById(R.id.diary_main_div);
         slideAnimator = ValueAnimator.ofFloat(0, 5);
@@ -85,7 +89,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     /**
      * 刷新列表
      */
-    public void reloadDataList() {
+    public void loadDataList() {
         // 日记数据库
         SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
         //diarySp.edit().putString("2021-7-22", "2021-7-22").putString("2021-7-21", "2021-7-21").putString("2021-7-20", "2021-7-20").putString("2021-7-19", "2021-7-19").putString("2021-7-18", "2021-7-18").commit();
@@ -103,7 +107,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             String content = diarySp.getString(dateList[i], "");
             mPreviews.add(DiaryPreview.createNormal(dateList[i], content));
         }
-        notifyDataSetChanged();
     }
 
     // 滑动相关参数

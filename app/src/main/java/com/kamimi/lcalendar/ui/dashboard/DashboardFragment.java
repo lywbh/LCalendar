@@ -31,8 +31,6 @@ public class DashboardFragment extends Fragment {
         // 屏蔽掉弹出层的点击事件
         binding.diaryDetail.setOnClickListener(v -> {
         });
-        // 展示日记列表内容
-        adapter.reloadDataList();
 
         return binding.getRoot();
     }

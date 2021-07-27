@@ -30,8 +30,6 @@ public class NotificationsFragment extends Fragment {
         // 创建堆叠滑动列表
         NotificationListAdapter adapter = new NotificationListAdapter(getContext());
         binding.pileLayout.setAdapter(adapter);
-        // 加载列表数据
-        adapter.reloadDataList();
 
         return binding.getRoot();
     }

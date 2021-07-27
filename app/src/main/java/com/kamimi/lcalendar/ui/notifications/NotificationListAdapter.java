@@ -32,17 +32,18 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     public NotificationListAdapter(Context context) {
         this.context = context;
         this.dataList = new ArrayList<>();
+        loadDataList(); // 准备数据
     }
 
     /**
      * 刷新列表
      */
-    public void reloadDataList() {
+    public void loadDataList() {
         // 提醒数据库
         SharedPreferences notificationSp = context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
-        Set<String> s = SetsKt.setOf(JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题一").content("内容哟~~~~~SDsdsdsd").notifyTime("15:30:15").build()),
-                JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题二").content("阿迪达斯哥哥哥我各位各位说对不起发布偶尔无纺布").notifyTime("15:30:15").build()));
-        notificationSp.edit().putStringSet("LCalendarNotificationSp", s).commit();
+        //Set<String> s = SetsKt.setOf(JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题一").content("内容哟~~~~~SDsdsdsd").notifyTime("15:30:15").build()),
+        //        JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题二").content("阿迪达斯哥哥哥我各位各位说对不起发布偶尔无纺布").notifyTime("15:30:15").build()));
+        //notificationSp.edit().putStringSet("LCalendarNotificationSp", s).commit();
         Set<String> jsonStrSet = notificationSp.getStringSet("LCalendarNotificationSp", new HashSet<>());
         // 插入列表项
         dataList.clear();
@@ -50,8 +51,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             NotificationData data = JSON.toJavaObject(JSONObject.parseObject(jsonStr), NotificationData.class);
             dataList.add(data);
         }
-        // TODO 这个到底要不要
-        // pileLayout.notifyDataSetChanged();
     }
 
     @Override
