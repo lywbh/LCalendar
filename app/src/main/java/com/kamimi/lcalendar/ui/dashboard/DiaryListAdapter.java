@@ -75,8 +75,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         });
         slideAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                diaryDetailView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
                 // 滑动结束后如果是隐藏状态，把弹层关闭
                 float currentValue = (float) ((ValueAnimator) animation).getAnimatedValue();
                 if (currentValue == 0) {
@@ -87,16 +91,15 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
     }
 
     /**
-     * 刷新列表
+     * 初始化数据
      */
-    public void loadDataList() {
+    private void loadDataList() {
         // 日记数据库
         SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
         //diarySp.edit().putString("2021-7-22", "2021-7-22").putString("2021-7-21", "2021-7-21").putString("2021-7-20", "2021-7-20").putString("2021-7-19", "2021-7-19").putString("2021-7-18", "2021-7-18").commit();
         String[] dateList = diarySp.getAll().keySet().toArray(new String[0]);
         Arrays.sort(dateList);
         // 插入列表项
-        mPreviews.clear();
         String todayStr = CommonUtils.dateFormat(new Date(), "yyyy-M-dd");
         if (dateList.length <= 0 || !todayStr.equals(dateList[dateList.length - 1])) {
             // 今天还没有日记，先生成一个空项放最前面
@@ -200,7 +203,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 diaryShade.setOnClickListener(w -> slideAnimator.reverse());
             }
             // 显示该弹出层
-            diaryDetailView.setVisibility(View.VISIBLE);
             slideAnimator.start();
         });
 

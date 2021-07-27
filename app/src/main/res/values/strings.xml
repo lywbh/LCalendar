@@ -3,10 +3,12 @@
     <string name="title_home">日历</string>
     <string name="title_dashboard">日记</string>
     <string name="title_notifications">提醒</string>
-    <string name="diary_submit_cancel">放弃</string>
-    <string name="diary_submit_confirm">写好啦</string>
-    <string name="diary_edit">编辑</string>
-    <string name="diary_delete">删除</string>
-    <string name="editor_hint">写下你的愿望吧~</string>
+    <string name="submit_cancel">放弃</string>
+    <string name="submit_confirm">写好啦</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="diary_editor_hint">写下你的愿望吧~</string>
     <string name="add">添加</string>
+    <string name="enter_notification_title">请输入日程标题</string>
+    <string name="enter_notification_content">请输入日程内容</string>
 </resources>

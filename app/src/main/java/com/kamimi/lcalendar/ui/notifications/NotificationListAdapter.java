@@ -13,12 +13,11 @@ import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.stone.pile.libs.PileLayout;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import kotlin.collections.SetsKt;
+import java.util.stream.Collectors;
 
 public class NotificationListAdapter extends PileLayout.Adapter {
 
@@ -27,30 +26,30 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     /**
      * 操作这个即可控制列表项内容
      */
-    private final List<NotificationData> dataList;
+    private List<NotificationData> dataList;
 
-    public NotificationListAdapter(Context context) {
+    private final PileLayout pileLayout;
+
+    public NotificationListAdapter(Context context, PileLayout pileLayout) {
         this.context = context;
-        this.dataList = new ArrayList<>();
-        loadDataList(); // 准备数据
+        this.pileLayout = pileLayout;
+
+        // 初始化数据
+        SharedPreferences notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
+        //notificationSp.edit().remove("LCalendarNotificationSp").commit();
+        Set<String> jsonStrSet = notificationSp.getStringSet("LCalendarNotificationSp", new HashSet<>());
+        this.dataList = jsonStrSet.stream()
+                .map(jsonStr -> JSON.toJavaObject(JSONObject.parseObject(jsonStr), NotificationData.class))
+                .sorted(Comparator.comparing(NotificationData::getDate))
+                .collect(Collectors.toList());
     }
 
     /**
-     * 刷新列表
+     * 刷新UI
      */
-    public void loadDataList() {
-        // 提醒数据库
-        SharedPreferences notificationSp = context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
-        //Set<String> s = SetsKt.setOf(JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题一").content("内容哟~~~~~SDsdsdsd").notifyTime("15:30:15").build()),
-        //        JSONObject.toJSONString(NotificationData.builder().date("2021-7-25").title("标题二").content("阿迪达斯哥哥哥我各位各位说对不起发布偶尔无纺布").notifyTime("15:30:15").build()));
-        //notificationSp.edit().putStringSet("LCalendarNotificationSp", s).commit();
-        Set<String> jsonStrSet = notificationSp.getStringSet("LCalendarNotificationSp", new HashSet<>());
-        // 插入列表项
-        dataList.clear();
-        for (String jsonStr : jsonStrSet) {
-            NotificationData data = JSON.toJavaObject(JSONObject.parseObject(jsonStr), NotificationData.class);
-            dataList.add(data);
-        }
+    public void reloadDataList(List<NotificationData> dataList) {
+        this.dataList = dataList;
+        pileLayout.notifyDataSetChanged();
     }
 
     @Override

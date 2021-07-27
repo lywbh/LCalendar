@@ -39,7 +39,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0"
-            android:text="@string/diary_delete"
+            android:text="@string/delete"
             android:maxLines="1" />
 
     </LinearLayout>
