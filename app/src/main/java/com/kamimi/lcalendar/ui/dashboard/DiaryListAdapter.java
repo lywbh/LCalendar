@@ -321,7 +321,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         TextView dateText = holder.diaryItem.findViewWithTag("diary_date");
         TextView previewText = holder.diaryItem.findViewWithTag("diary_preview");
         // 设置字体
-        dateText.setTypeface(FontLoader.laksFont);
+        dateText.setTypeface(FontLoader.ldzsFont);
         previewText.setTypeface(FontLoader.ldzsFont);
         // 取内容
         DiaryPreview mPreview = mPreviews.get(position);

@@ -52,7 +52,7 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         // 设置页面各字体
-        binding.titleHome.setTypeface(FontLoader.laksFont);
+        binding.titleHome.setTypeface(FontLoader.ldzsFont);
         binding.textHome.setTypeface(FontLoader.ldzsFont);
         binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
         // 爱心记录
@@ -70,7 +70,7 @@ public class HomeFragment extends Fragment {
                     p.setTypeface(FontLoader.ldzsFont);
                     p.setTextSize(50);
                 } else if (day.isCurrent) {
-                    p.setTypeface(FontLoader.laksFont);
+                    p.setTypeface(FontLoader.ldzsFont);
                     p.setTextSize(50);
                     if (day.backgroundStyle == 2) {
                         p.setTextSize(70);
