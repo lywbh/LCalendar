@@ -29,7 +29,7 @@ public class NotificationData {
     private String content;
 
     /**
-     * 通知时间，hh:mm
+     * 通知时间，HH:mm
      */
     private String notifyTime;
 

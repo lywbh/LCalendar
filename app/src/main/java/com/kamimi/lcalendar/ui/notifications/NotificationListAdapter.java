@@ -1,6 +1,10 @@
 package com.kamimi.lcalendar.ui.notifications;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.Editable;
 import android.view.View;
@@ -15,23 +19,32 @@ import com.alibaba.fastjson.JSONObject;
 import com.duma.ld.mylibrary.SwitchView;
 import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.TimeEntity;
+import com.kamimi.lcalendar.AlarmActivity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.obj.NotificationData;
+import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.stone.pile.libs.PileLayout;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NotificationListAdapter extends PileLayout.Adapter {
 
     private final Context context;
-
     private final FragmentNotificationsBinding binding;
-
     private final NotificationLayerController layerController;
+    private final AlarmManager alarmManager;
+
+    /**
+     * 一个闹钟一个intent，用于取消
+     */
+    private final Map<NotificationData, PendingIntent> alarmIntents;
 
     /**
      * 日程数据库
@@ -47,14 +60,18 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         this.context = context;
         this.binding = binding;
         this.layerController = layerController;
-
+        this.alarmManager = (AlarmManager) context.getSystemService(Service.ALARM_SERVICE);
+        this.alarmIntents = new HashMap<>();
         // 初始化数据
         notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
         String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
         JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
-        this.dataList = jsonArr.stream()
-                .map(jsonObj -> JSON.toJavaObject((JSON) jsonObj, NotificationData.class))
-                .collect(Collectors.toList());
+        this.dataList = jsonArr.stream().map(jsonObj -> {
+            // 对每个日程生成一个intent对象，用于控制闹钟
+            NotificationData data = JSON.toJavaObject((JSON) jsonObj, NotificationData.class);
+            alarmIntents.put(data, createAlarmIntent());
+            return data;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -81,11 +98,11 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         contentView.setTypeface(FontLoader.ldzsFont);
         deleteButton.setTypeface(FontLoader.ldzsFont);
         // 数据填充
-        NotificationData dataItem = dataList.get(index);
-        dateView.setText(dataItem.getDate());
-        titleView.setText(dataItem.getTitle());
-        contentView.setText(dataItem.getContent());
-        switchView.setChecked(dataItem.isNotifyOn());
+        NotificationData data = dataList.get(index);
+        dateView.setText(data.getDate());
+        titleView.setText(data.getTitle());
+        contentView.setText(data.getContent());
+        switchView.setChecked(data.isNotifyOn());
         // 点击删除
         deleteButton.setOnClickListener(v -> DialogUtils.confirmDialog(context, "要删除日程吗", (dialog, witch) -> {
             // 删除数据
@@ -93,24 +110,32 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
             jsonArr.remove(index);
             notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
-            // 删除闹钟，通过开关关闭来触发
-            switchView.setChecked(false);
+            // 删除闹钟
+            alarmManager.cancel(alarmIntents.get(dataList.get(index)));
             // 更新UI
             dataList.remove(index);
             binding.pileLayout.notifyDataSetChanged();
         }));
         // 切换通知开关
         switchView.setOnClickCheckedListener(() -> {
+            // 修改UI数据
+            NotificationData dataItem = dataList.get(index);
+            dataItem.setNotifyOn(switchView.isChecked());
             // 存储到数据库
             String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
             JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
-            ((JSONObject) jsonArr.get(index)).put("notifyOn", switchView.isChecked());
+            ((JSONObject) jsonArr.get(index)).put("notifyOn", dataItem.isNotifyOn());
             notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
-            // TODO 添加或删除闹钟
-            if (switchView.isChecked()) {
-
+            // 添加/删除闹钟
+            PendingIntent pi = alarmIntents.get(dataItem);
+            if (dataItem.isNotifyOn()) {
+                String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
+                Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-dd HH:mm:ss");
+                if (triggerTime != null) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime.getTime(), pi);
+                }
             } else {
-
+                alarmManager.cancel(pi);
             }
         });
     }
@@ -150,31 +175,24 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                 // 保存数据
                 String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
                 JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
-                NotificationData notificationData = NotificationData.builder()
-                        .date(String.format("%s-%s-%s",
-                                binding.notificationEditorDate.getSelectedYear(),
-                                binding.notificationEditorDate.getSelectedMonth(),
-                                binding.notificationEditorDate.getSelectedDay()))
-                        .title(binding.notificationEditorTitle.getText().toString())
-                        .content(binding.notificationEditorContent.getText().toString())
-                        .notifyTime(String.format("%s:%s",
-                                binding.notificationEditorTime.getSelectedHour(),
-                                binding.notificationEditorTime.getSelectedMinute()))
-                        .notifyOn(false)
-                        .build();
                 // 更新UI数据
+                NotificationData data;
                 if (position >= 0 && position < dataList.size()) {
                     // 编辑时
-                    jsonArr.set(position, JSONObject.toJSON(notificationData));
-                    dataList.set(position, notificationData);
+                    data = dataList.get(position);
+                    fillDataFromEditor(data);
+                    jsonArr.set(position, JSONObject.toJSON(data));
                 } else {
                     // 新增时
-                    jsonArr.add(JSONObject.toJSON(notificationData));
-                    dataList.add(notificationData);
+                    data = new NotificationData();
+                    fillDataFromEditor(data);
+                    jsonArr.add(JSONObject.toJSON(data));
+                    dataList.add(data);
+                    alarmIntents.put(data, createAlarmIntent());
                 }
                 // 写入数据库
                 notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
-                // 刷新UI
+                // 刷新UI，这一步会触发闹钟开关切换，即自动关闭该闹钟
                 binding.pileLayout.notifyDataSetChanged();
                 DialogUtils.toast(context, "保存成功");
                 layerController.hideLayer();
@@ -210,6 +228,23 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                 imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
             }
         });
+    }
+
+    private void fillDataFromEditor(NotificationData notificationData) {
+        notificationData.setDate(String.format("%s-%s-%s",
+                binding.notificationEditorDate.getSelectedYear(),
+                binding.notificationEditorDate.getSelectedMonth(),
+                binding.notificationEditorDate.getSelectedDay()));
+        notificationData.setTitle(binding.notificationEditorTitle.getText().toString());
+        notificationData.setContent(binding.notificationEditorContent.getText().toString());
+        notificationData.setNotifyTime(String.format("%s:%s",
+                binding.notificationEditorTime.getSelectedHour(),
+                binding.notificationEditorTime.getSelectedMinute()));
+        notificationData.setNotifyOn(false);
+    }
+
+    private PendingIntent createAlarmIntent() {
+        return PendingIntent.getActivity(context, 0, new Intent(context, AlarmActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 }

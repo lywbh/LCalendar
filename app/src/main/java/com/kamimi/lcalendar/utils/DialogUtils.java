@@ -25,6 +25,22 @@ public class DialogUtils {
     }
 
     /**
+     * 确认框（无标题&只有一个按钮）
+     */
+    public static void confirmDialog(Context context, String message,
+                                     String positiveText, DialogInterface.OnClickListener positiveHandler) {
+        confirmDialog(context, null, message, positiveText, positiveHandler);
+    }
+
+    /**
+     * 确认框（只有一个按钮）
+     */
+    public static void confirmDialog(Context context, String title, String message,
+                                     String positiveText, DialogInterface.OnClickListener positiveHandler) {
+        confirmDialog(context, title, message, positiveText, null, positiveHandler, null);
+    }
+
+    /**
      * 确认框（无标题&默认按钮&只定义确认按钮的回调）
      */
     public static void confirmDialog(Context context, String message,
@@ -54,12 +70,12 @@ public class DialogUtils {
     public static void confirmDialog(Context context, String title, String message,
                                      String positiveText, String negativeText,
                                      DialogInterface.OnClickListener positiveHandler, DialogInterface.OnClickListener negativeHandler) {
-        AlertDialog.Builder bb = new AlertDialog.Builder(context);
-        bb.setTitle(title);
-        bb.setMessage(message);
-        bb.setPositiveButton(positiveText, positiveHandler);
-        bb.setNegativeButton(negativeText, negativeHandler);
-        bb.show();
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positiveText, positiveHandler)
+                .setNegativeButton(negativeText, negativeHandler)
+                .show();
     }
 
 }
