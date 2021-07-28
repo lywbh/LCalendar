@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.duma.ld.mylibrary.SwitchView;
 import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
+import com.github.gzuliyujiang.wheelpicker.entity.TimeEntity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.obj.NotificationData;
@@ -47,21 +48,8 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         this.binding = binding;
         this.layerController = layerController;
 
-        // 设置弹出层的字体
-        this.binding.notificationEditorDate.getYearWheelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorDate.getYearLabelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorDate.getMonthWheelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorDate.getMonthLabelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorDate.getDayWheelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorDate.getDayLabelView().setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorTitle.setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationEditorContent.setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationSubmitButton.setTypeface(FontLoader.ldzsFont);
-        this.binding.notificationCancelButton.setTypeface(FontLoader.ldzsFont);
-
         // 初始化数据
         notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
-        // notificationSp.edit().remove("LCalendarNotificationSp").commit();
         String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
         JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
         this.dataList = jsonArr.stream()
@@ -81,41 +69,48 @@ public class NotificationListAdapter extends PileLayout.Adapter {
 
     @Override
     public void bindView(View view, int index) {
+        // 各种视图
         TextView dateView = view.findViewWithTag("notification_date");
         TextView titleView = view.findViewWithTag("notification_title");
         TextView contentView = view.findViewWithTag("notification_content");
-        SwitchView switchView = view.findViewWithTag("notification_switch");
+        SwitchView switchView = view.findViewWithTag("notification_alert_switch");
         Button deleteButton = view.findViewWithTag("notification_delete");
-
+        // 设置字体
         dateView.setTypeface(FontLoader.ldzsFont);
         titleView.setTypeface(FontLoader.ldzsFont);
         contentView.setTypeface(FontLoader.ldzsFont);
         deleteButton.setTypeface(FontLoader.ldzsFont);
-
+        // 数据填充
         NotificationData dataItem = dataList.get(index);
         dateView.setText(dataItem.getDate());
         titleView.setText(dataItem.getTitle());
         contentView.setText(dataItem.getContent());
-        switchView.setChecked(dataItem.getNotifyTime() != null);
-
+        switchView.setChecked(dataItem.isNotifyOn());
+        // 点击删除
         deleteButton.setOnClickListener(v -> DialogUtils.confirmDialog(context, "要删除日程吗", (dialog, witch) -> {
             // 删除数据
             String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
             JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
-            if (index >= 0 && index < jsonArr.size()) {
-                jsonArr.remove(index);
-                notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
-            }
+            jsonArr.remove(index);
+            notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
+            // 删除闹钟，通过开关关闭来触发
+            switchView.setChecked(false);
             // 更新UI
-            if (index >= 0 && index < dataList.size()) {
-                dataList.remove(index);
-                binding.pileLayout.notifyDataSetChanged();
-            }
+            dataList.remove(index);
+            binding.pileLayout.notifyDataSetChanged();
         }));
-
+        // 切换通知开关
         switchView.setOnClickCheckedListener(() -> {
+            // 存储到数据库
+            String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
+            JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
+            ((JSONObject) jsonArr.get(index)).put("notifyOn", switchView.isChecked());
+            notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
+            // TODO 添加或删除闹钟
             if (switchView.isChecked()) {
-                // TODO 打开开关录入一个时间
+
+            } else {
+
             }
         });
     }
@@ -134,10 +129,10 @@ public class NotificationListAdapter extends PileLayout.Adapter {
 
     /**
      * 展示详情弹出框
-     * @param position 打开的是第几个窗口，负数表示是新增
+     *
+     * @param position 打开的是第几个窗口，负数表示打开一个新增窗口
      */
     public void showNotificationDetail(int position) {
-        NotificationData data = position < 0 ? NotificationData.builder().build() : dataList.get(position);
         // 编辑框焦点变更
         setFocusChangeListener(binding.notificationEditorTitle);
         setFocusChangeListener(binding.notificationEditorContent);
@@ -162,14 +157,22 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                                 binding.notificationEditorDate.getSelectedDay()))
                         .title(binding.notificationEditorTitle.getText().toString())
                         .content(binding.notificationEditorContent.getText().toString())
+                        .notifyTime(String.format("%s:%s",
+                                binding.notificationEditorTime.getSelectedHour(),
+                                binding.notificationEditorTime.getSelectedMinute()))
+                        .notifyOn(false)
                         .build();
-                if (position < 0) {
-                    jsonArr.add(JSONObject.toJSON(notificationData));
-                    dataList.add(notificationData);
-                } else {
+                // 更新UI数据
+                if (position >= 0 && position < dataList.size()) {
+                    // 编辑时
                     jsonArr.set(position, JSONObject.toJSON(notificationData));
                     dataList.set(position, notificationData);
+                } else {
+                    // 新增时
+                    jsonArr.add(JSONObject.toJSON(notificationData));
+                    dataList.add(notificationData);
                 }
+                // 写入数据库
                 notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
                 // 刷新UI
                 binding.pileLayout.notifyDataSetChanged();
@@ -179,17 +182,22 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         });
         // 点击取消
         binding.notificationCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> layerController.hideLayer()));
-
-        binding.notificationEditorDate.setRange(DateEntity.target(1900, 1, 1), DateEntity.target(2099, 12, 31));
-        if (position < 0) {
-            binding.notificationEditorDate.setDefaultValue(DateEntity.today());
-            binding.notificationEditorTitle.setText("");
-            binding.notificationEditorContent.setText("");
-        } else {
+        // 数据填充
+        if (position >= 0 && position < dataList.size()) {
+            // 编辑时
+            NotificationData data = dataList.get(position);
             String[] dateSplit = data.getDate().split("-");
+            String[] timeSplit = data.getNotifyTime().split(":");
             binding.notificationEditorDate.setDefaultValue(DateEntity.target(Integer.parseInt(dateSplit[0]), Integer.parseInt(dateSplit[1]), Integer.parseInt(dateSplit[2])));
+            binding.notificationEditorTime.setDefaultValue(TimeEntity.target(Integer.parseInt(timeSplit[0]), Integer.parseInt(timeSplit[1]), 0));
             binding.notificationEditorTitle.setText(data.getTitle());
             binding.notificationEditorContent.setText(data.getContent());
+        } else {
+            // 创建时
+            binding.notificationEditorDate.setDefaultValue(DateEntity.today());
+            binding.notificationEditorTime.setDefaultValue(TimeEntity.now());
+            binding.notificationEditorTitle.setText("");
+            binding.notificationEditorContent.setText("");
         }
         layerController.showLayer();
     }

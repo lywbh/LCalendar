@@ -29,8 +29,13 @@ public class NotificationData {
     private String content;
 
     /**
-     * 通知时间，hh:m:ss，如果为null表示没有开启通知
+     * 通知时间，hh:mm
      */
     private String notifyTime;
+
+    /**
+     * 是否打开通知
+     */
+    private boolean notifyOn;
 
 }
