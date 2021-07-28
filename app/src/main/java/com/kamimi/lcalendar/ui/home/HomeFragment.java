@@ -194,7 +194,6 @@ public class HomeFragment extends Fragment {
         int height = origin.getHeight();
         float scaleWidth = ((float) w) / width;
         float scaleHeight = ((float) h) / height;
-        Log.v("scaleWidth,scaleHeight", scaleWidth + "," + scaleHeight);
         Matrix matrix = new Matrix();
         matrix.postScale(scaleWidth, scaleHeight);
         Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, true);
