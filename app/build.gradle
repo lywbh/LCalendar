@@ -50,6 +50,7 @@ dependencies {
     implementation 'com.github.gzu-liyujiang.AndroidPicker:Common:3.0.8'
     implementation 'com.github.gzu-liyujiang.AndroidPicker:WheelView:3.0.8'
     implementation 'com.github.gzu-liyujiang.AndroidPicker:WheelPicker:3.0.8'
+    implementation 'com.ld:switchView:1.1.7'
     implementation (name:'pile-layout', ext:'aar')
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'

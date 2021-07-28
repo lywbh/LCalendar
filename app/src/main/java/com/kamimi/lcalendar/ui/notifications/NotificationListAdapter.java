@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.duma.ld.mylibrary.SwitchView;
 import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
@@ -83,7 +84,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         TextView dateView = view.findViewWithTag("notification_date");
         TextView titleView = view.findViewWithTag("notification_title");
         TextView contentView = view.findViewWithTag("notification_content");
-        //TextView switchView = view.findViewWithTag("notification_switch");
+        SwitchView switchView = view.findViewWithTag("notification_switch");
         Button deleteButton = view.findViewWithTag("notification_delete");
 
         dateView.setTypeface(FontLoader.ldzsFont);
@@ -95,18 +96,28 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         dateView.setText(dataItem.getDate());
         titleView.setText(dataItem.getTitle());
         contentView.setText(dataItem.getContent());
-        //switchView.setText(dataItem.getNotifyTime());
+        switchView.setChecked(dataItem.getNotifyTime() != null);
 
         deleteButton.setOnClickListener(v -> DialogUtils.confirmDialog(context, "要删除日程吗", (dialog, witch) -> {
             // 删除数据
             String jsonArrStr = notificationSp.getString("LCalendarNotificationSp", "[]");
             JSONArray jsonArr = JSONArray.parseArray(jsonArrStr);
-            jsonArr.remove(index);
-            notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
+            if (index >= 0 && index < jsonArr.size()) {
+                jsonArr.remove(index);
+                notificationSp.edit().putString("LCalendarNotificationSp", jsonArr.toJSONString()).apply();
+            }
             // 更新UI
-            dataList.remove(index);
-            binding.pileLayout.notifyDataSetChanged();
+            if (index >= 0 && index < dataList.size()) {
+                dataList.remove(index);
+                binding.pileLayout.notifyDataSetChanged();
+            }
         }));
+
+        switchView.setOnClickCheckedListener(() -> {
+            if (switchView.isChecked()) {
+                // TODO 打开开关录入一个时间
+            }
+        });
     }
 
     @Override

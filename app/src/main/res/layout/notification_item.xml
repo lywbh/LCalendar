@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,9 +13,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_margin="30dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="30dp">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -63,14 +64,37 @@
 
         </LinearLayout>
 
-        <Button
-            android:background="@drawable/ic_notification_delete_button_background"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
-            android:layout_gravity="end"
-            android:text="@string/delete"
-            android:textSize="12sp"
-            android:tag="notification_delete" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_notification_toolbar_background">
+
+            <com.duma.ld.mylibrary.SwitchView
+                android:layout_width="43dp"
+                android:layout_height="25dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:tag="notification_switch"
+                app:bgColor="#E3CCFF"
+                app:leftColor="#FFF"
+                app:rightColor="#FDF"
+                app:setChecked="false"
+                app:textLeft=""
+                app:textRight=""
+                app:time="150" />
+
+            <Button
+                android:layout_width="65dp"
+                android:layout_height="45dp"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/ic_notification_delete_button_background"
+                android:tag="notification_delete"
+                android:text="@string/delete"
+                android:textSize="12sp"
+                app:layout_constraintRight_toRightOf="parent" />
+
+        </RelativeLayout>
 
     </LinearLayout>
 
