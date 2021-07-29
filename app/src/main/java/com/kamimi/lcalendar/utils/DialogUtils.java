@@ -25,15 +25,15 @@ public class DialogUtils {
     }
 
     /**
-     * 提示框（无标题，无按钮）
+     * 提示框（无按钮）
      */
-    public static void confirmDialog(Context context, String message,
+    public static void confirmDialog(Context context, String title, String message,
                                      DialogInterface.OnDismissListener dismissHandler) {
-        confirmDialog(context, message, null, null, null, null, dismissHandler);
+        confirmDialog(context, title, message, null, null, null, null, dismissHandler);
     }
 
     /**
-     * 确认框（无标题，取消和关闭无回调）
+     * 确认框（无标题，仅设置确认回调）
      */
     public static void confirmDialog(Context context, String message,
                                      String positiveText, String negativeText,
