@@ -185,7 +185,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 }
             });
             // 点击取消
-            diaryCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", (dialog, which) -> {
+            diaryCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", "确认", "取消", (dialog, which) -> {
                 if (viewType == DiaryPreview.VIEW_TYPE_VIRTUAL) {
                     // 如果是新建日记，点取消直接把弹出层关了
                     slideAnimator.reverse();
@@ -291,7 +291,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 return true;
             });
             // 点击删除按钮
-            deleteButton.setOnClickListener(button -> DialogUtils.confirmDialog(context, "要删除这篇日记吗？", (dialog, which) -> {
+            deleteButton.setOnClickListener(button -> DialogUtils.confirmDialog(context, "要删除这篇日记吗？", "确认", "取消", (dialog, which) -> {
                 // 隐藏刚才划出来的删除按钮
                 float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
                 AnimUtils.toggleWeightAnim(deleteButton, currentWeight, 0);

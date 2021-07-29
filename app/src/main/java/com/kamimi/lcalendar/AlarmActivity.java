@@ -20,9 +20,8 @@ public class AlarmActivity extends AppCompatActivity {
         Uri uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_RINGTONE);
         mediaPlayer = MediaPlayer.create(this, uri);
         mediaPlayer.start();
-        DialogUtils.confirmDialog(this, "您有新的日程~", "确认", (dialog, which) -> {
+        DialogUtils.confirmDialog(this, "您有新的日程~", dialog -> {
             mediaPlayer.stop();
-            // TODO 怎么回到上个Activity
             finish();
         });
     }

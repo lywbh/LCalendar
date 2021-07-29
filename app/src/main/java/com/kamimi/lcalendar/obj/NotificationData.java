@@ -8,10 +8,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationData {
+
+    /**
+     * 日程ID
+     */
+    private int id;
 
     /**
      * 日期，yyyy-MM-dd
