@@ -17,7 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.duma.ld.mylibrary.SwitchView;
 import com.github.gzuliyujiang.wheelpicker.entity.DateEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.TimeEntity;
-import com.kamimi.lcalendar.AlarmActivity;
+import com.kamimi.lcalendar.AlarmReceiver;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.databinding.FragmentNotificationsBinding;
 import com.kamimi.lcalendar.obj.NotificationData;
@@ -236,9 +236,10 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
         Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-dd HH:mm:ss");
         if (triggerTime != null) {
-            Intent intent = new Intent(context, AlarmActivity.class)
+            Intent intent = new Intent(context, AlarmReceiver.class)
+                    .setAction("NOTIFICATION")
                     .putExtra("notificationData", JSONObject.toJSONString(dataItem));
-            PendingIntent pi = PendingIntent.getActivity(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pi = PendingIntent.getBroadcast(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime.getTime(), pi);
         }
     }
@@ -247,7 +248,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
      * 关闭闹钟，如果当前没开启闹钟则无事发生
      */
     private void cancelAlarm(NotificationData dataItem) {
-        PendingIntent pi = PendingIntent.getActivity(context, dataItem.getId(), new Intent(context, AlarmActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getBroadcast(context, dataItem.getId(), new Intent(context, AlarmReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(pi);
     }
 
