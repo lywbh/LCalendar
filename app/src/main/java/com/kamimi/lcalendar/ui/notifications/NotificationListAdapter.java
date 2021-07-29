@@ -47,11 +47,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     private final IdGenerator idGenerator;
 
     /**
-     * 一个闹钟一个intent，用于取消
-     */
-    private final Map<NotificationData, PendingIntent> alarmIntents;
-
-    /**
      * 日程数据库
      */
     private final SharedPreferences notificationSp;
@@ -66,7 +61,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         this.binding = binding;
         this.layerController = layerController;
         this.alarmManager = (AlarmManager) context.getSystemService(Service.ALARM_SERVICE);
-        this.alarmIntents = new HashMap<>();
         // 初始化数据
         notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
         this.dataList = notificationSp.getAll()
@@ -246,7 +240,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             Intent intent = new Intent(context, AlarmActivity.class)
                     .putExtra("notificationData", JSONObject.toJSONString(dataItem));
             PendingIntent pi = PendingIntent.getActivity(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            alarmIntents.put(dataItem, pi);
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime.getTime(), pi);
         }
     }
@@ -255,11 +248,8 @@ public class NotificationListAdapter extends PileLayout.Adapter {
      * 关闭闹钟，如果当前没开启闹钟则无事发生
      */
     private void cancelAlarm(NotificationData dataItem) {
-        PendingIntent pi = alarmIntents.get(dataItem);
-        if (pi != null) {
-            alarmIntents.remove(dataItem);
-            alarmManager.cancel(pi);
-        }
+        PendingIntent pi = PendingIntent.getActivity(context, dataItem.getId(), new Intent(context, AlarmActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.cancel(pi);
     }
 
 }
