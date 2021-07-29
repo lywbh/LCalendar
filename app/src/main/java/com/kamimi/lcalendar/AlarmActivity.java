@@ -7,6 +7,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.alibaba.fastjson.JSONObject;
+import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.DialogUtils;
 
 public class AlarmActivity extends AppCompatActivity {
@@ -20,7 +22,8 @@ public class AlarmActivity extends AppCompatActivity {
         Uri uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_RINGTONE);
         mediaPlayer = MediaPlayer.create(this, uri);
         mediaPlayer.start();
-        DialogUtils.confirmDialog(this, "您有新的日程~", "", dialog -> {
+        NotificationData data = JSONObject.parseObject(getIntent().getStringExtra("notificationData"), NotificationData.class);
+        DialogUtils.confirm(this, data.getTitle(), data.getContent(), dialog -> {
             mediaPlayer.stop();
             finish();
         });

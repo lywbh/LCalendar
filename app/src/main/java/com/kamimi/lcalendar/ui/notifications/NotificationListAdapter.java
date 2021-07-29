@@ -109,7 +109,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         contentView.setText(data.getContent());
         switchView.setChecked(data.isNotifyOn());
         // 点击删除
-        deleteButton.setOnClickListener(v -> DialogUtils.confirmDialog(context, "要删除日程吗", "确认", "取消", (dialog, witch) -> {
+        deleteButton.setOnClickListener(v -> DialogUtils.confirm(context, "要删除日程吗", "确认", "取消", (dialog, witch) -> {
             NotificationData dataItem = dataList.get(index);
             // 删除数据库
             notificationSp.edit().remove(dataItem.getId().toString()).apply();
@@ -189,7 +189,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             }
         });
         // 点击取消
-        binding.notificationCancelButton.setOnClickListener(w -> DialogUtils.confirmDialog(context, "放弃编辑？", "确认", "取消", (dialog, which) -> layerController.hideLayer()));
+        binding.notificationCancelButton.setOnClickListener(w -> DialogUtils.confirm(context, "放弃编辑？", "确认", "取消", (dialog, which) -> layerController.hideLayer()));
         // 数据填充
         if (position >= 0 && position < dataList.size()) {
             // 编辑时
@@ -243,8 +243,8 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
         Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-dd HH:mm:ss");
         if (triggerTime != null) {
-            Intent intent = new Intent(context, AlarmActivity.class);
-            // TODO 设置数据
+            Intent intent = new Intent(context, AlarmActivity.class)
+                    .putExtra("notificationData", JSONObject.toJSONString(dataItem));
             PendingIntent pi = PendingIntent.getActivity(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmIntents.put(dataItem, pi);
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime.getTime(), pi);
