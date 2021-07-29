@@ -1,7 +1,6 @@
 package com.kamimi.lcalendar.obj;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +14,7 @@ public class NotificationData {
     /**
      * 日程ID
      */
-    private int id;
+    private Integer id;
 
     /**
      * 日期，yyyy-MM-dd
