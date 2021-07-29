@@ -1,5 +1,6 @@
 package com.kamimi.lcalendar;
 
+import android.app.Activity;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -11,7 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.DialogUtils;
 
-public class AlarmActivity extends AppCompatActivity {
+public class AlarmActivity extends Activity {
 
     private MediaPlayer mediaPlayer;
 

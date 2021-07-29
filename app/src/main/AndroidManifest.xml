@@ -22,10 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".AlarmActivity"
-            android:label="@string/app_notice_name">
-        </activity>
+        <activity android:name=".AlarmActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
     </application>
 
 </manifest>
