@@ -6,8 +6,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.DialogUtils;

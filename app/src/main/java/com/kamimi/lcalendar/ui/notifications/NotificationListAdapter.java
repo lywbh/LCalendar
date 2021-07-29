@@ -29,9 +29,7 @@ import com.stone.pile.libs.PileLayout;
 
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NotificationListAdapter extends PileLayout.Adapter {
@@ -234,6 +232,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
      * 开启闹钟
      */
     private void setAlarm(NotificationData dataItem) {
+        // TODO 把打开Activity换成广播，然后新增一个广播接收器来发出推送
         String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
         Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-dd HH:mm:ss");
         if (triggerTime != null) {
