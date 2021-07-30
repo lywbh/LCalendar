@@ -9,7 +9,10 @@ import androidx.core.app.NotificationCompat;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.NotificationData;
+import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.utils.NotificationUtils;
+
+import java.util.Date;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
@@ -22,6 +25,9 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         NotificationData data = JSONObject.parseObject(intent.getStringExtra(ALARM_DATA_NAME), NotificationData.class);
+        // 通知时间
+        String dateTimeStr = String.format("%s %s:00", data.getDate(), data.getNotifyTime());
+        Date notifyTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-d HH:mm:ss");
         // 创建展开通知明细
         NotificationCompat.BigTextStyle mBigTextStyle = new NotificationCompat.BigTextStyle();
         mBigTextStyle.setBigContentTitle(data.getTitle());
@@ -34,6 +40,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // 构造参数
         final NotificationUtils.NotifyObject params = NotificationUtils.paramBuilder()
                 .icon(R.mipmap.heart)
+                .when(notifyTime.getTime())
                 .title(data.getTitle())
                 .content(data.getContent())
                 .subText(NOTIFICATION_HINT_TEXT)

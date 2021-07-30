@@ -24,6 +24,7 @@ public class NotificationUtils {
 
         @DrawableRes
         private final int icon;                         // 小图标
+        private final long when;                        // 通知时间
         private final String title;                     // 标题
         private final String subText;                   // 小标题
         private final String content;                   // 内容
@@ -71,6 +72,7 @@ public class NotificationUtils {
     public void push(int nid, NotifyObject obj) {
         Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(obj.getIcon())
+                .setWhen(obj.getWhen())
                 .setContentTitle(obj.getTitle())
                 .setSubText(obj.getSubText())
                 .setContentText(obj.getContent())
@@ -79,7 +81,6 @@ public class NotificationUtils {
                 .setContentIntent(obj.getPi())
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setWhen(System.currentTimeMillis())
                 .setAutoCancel(true)
                 .build();
         mNotifyMgr.notify(nid, notification);

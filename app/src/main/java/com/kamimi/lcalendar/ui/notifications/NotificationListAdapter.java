@@ -250,7 +250,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     private void setAlarm(NotificationData dataItem) {
         String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
         Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-d HH:mm:ss");
-        if (triggerTime != null) {
+        if (triggerTime != null && triggerTime.getTime() >= System.currentTimeMillis()) {
             Intent intent = new Intent(context, AlarmReceiver.class)
                     .putExtra(AlarmReceiver.ALARM_DATA_NAME, JSONObject.toJSONString(dataItem));
             PendingIntent pi = PendingIntent.getBroadcast(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
