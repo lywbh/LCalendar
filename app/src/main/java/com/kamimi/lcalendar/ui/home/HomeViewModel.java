@@ -26,7 +26,6 @@ public class HomeViewModel extends ViewModel {
         titleText.setValue(CommonUtils.monthToEn(calendar.get(Calendar.MONTH)) + "  " + calendar.get(Calendar.YEAR));
         mText = new MutableLiveData<>();
         hText = new MutableLiveData<>();
-
         CommonUtils.submitTask(() -> {
             try {
                 JSONObject holidayJson = CommonUtils.httpGet("http://timor.tech/api/holiday/tts/");
@@ -38,6 +37,8 @@ public class HomeViewModel extends ViewModel {
                 Log.e("ERROR", "timor网络异常", e);
                 mText.postValue("获取今天的数据出现了一些问题哟。");
             }
+        });
+        CommonUtils.submitTask(() -> {
             try {
                 JSONObject hitokotoJson = CommonUtils.httpGet("https://v1.hitokoto.cn/");
                 hText.postValue(BLANK_GAP + hitokotoJson.getString("hitokoto")
