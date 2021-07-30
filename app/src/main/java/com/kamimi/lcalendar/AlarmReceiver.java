@@ -4,6 +4,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import androidx.core.app.NotificationCompat;
 
@@ -18,9 +21,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     public static final String ALARM_DATA_NAME = "notificationData";
 
-    private static final String NOTIFICATION_HINT_TEXT = "您有新的日程需要处理~";
+    private static final String NOTIFICATION_HINT_TEXT = "您有新的日程需要处理";
 
     private NotificationUtils notificationUtils;
+
+    private Ringtone ringtone;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -53,6 +58,12 @@ public class AlarmReceiver extends BroadcastReceiver {
             notificationUtils = NotificationUtils.init(context);
         }
         notificationUtils.push(data.getId(), params);
+        // 播放声音
+        if (ringtone == null) {
+            Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            ringtone = RingtoneManager.getRingtone(context, uri);
+        }
+        ringtone.play();
     }
 
 }

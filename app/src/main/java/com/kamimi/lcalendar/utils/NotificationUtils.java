@@ -47,6 +47,7 @@ public class NotificationUtils {
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, "日程提醒", NotificationManager.IMPORTANCE_HIGH);
             mChannel.setDescription("新日程通知");
             mChannel.enableLights(true);
+            mChannel.setSound(null, null);
             mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
             mNotifyMgr.createNotificationChannel(mChannel);
         }
@@ -79,7 +80,7 @@ public class NotificationUtils {
                 .setTicker(obj.getTicker())
                 .setStyle(obj.getStyle())
                 .setContentIntent(obj.getPi())
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setSound(null)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .build();
