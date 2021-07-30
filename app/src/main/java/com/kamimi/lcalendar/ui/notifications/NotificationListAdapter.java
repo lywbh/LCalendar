@@ -39,6 +39,8 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     private final NotificationLayerController layerController;
     private final AlarmManager alarmManager;
 
+    private volatile int displayPosition;
+
     /**
      * ID生成器，新建日程时使用
      */
@@ -131,9 +133,23 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         });
     }
 
+    /**
+     * item点击事件
+     */
     @Override
     public void onItemClick(View view, int position) {
-        showNotificationDetail(position);
+        // 只能点击最上层展示的那一个
+        if (position == displayPosition) {
+            showNotificationDetail(position);
+        }
+    }
+
+    /**
+     * item滑到最上层展示的事件
+     */
+    @Override
+    public void displaying(int position) {
+        this.displayPosition = position;
     }
 
     /**
@@ -146,7 +162,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     /**
      * 展示详情弹出框
      *
-     * @param position 打开的是第几个窗口，负数表示打开一个新增窗口
+     * @param position 打开的是第几个窗口，超出列表范围的数表示创建一个新窗口
      */
     public void showNotificationDetail(int position) {
         // 编辑框焦点变更
@@ -232,13 +248,11 @@ public class NotificationListAdapter extends PileLayout.Adapter {
      * 开启闹钟
      */
     private void setAlarm(NotificationData dataItem) {
-        // TODO 把打开Activity换成广播，然后新增一个广播接收器来发出推送
         String dateTimeStr = String.format("%s %s:00", dataItem.getDate(), dataItem.getNotifyTime());
         Date triggerTime = CommonUtils.parseDate(dateTimeStr, "yyyy-M-dd HH:mm:ss");
         if (triggerTime != null) {
             Intent intent = new Intent(context, AlarmReceiver.class)
-                    .setAction("NOTIFICATION")
-                    .putExtra("notificationData", JSONObject.toJSONString(dataItem));
+                    .putExtra(AlarmReceiver.ALARM_DATA_NAME, JSONObject.toJSONString(dataItem));
             PendingIntent pi = PendingIntent.getBroadcast(context, dataItem.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime.getTime(), pi);
         }

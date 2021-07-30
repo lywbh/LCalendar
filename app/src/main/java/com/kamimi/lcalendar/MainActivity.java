@@ -8,7 +8,6 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -20,6 +19,8 @@ import com.kamimi.lcalendar.utils.CommonUtils;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String START_PAGE_NAME = "startPage";
 
     private ActivityMainBinding binding;
 
@@ -40,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
         // BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications).build();
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_activity_main);
         NavController navController = navHostFragment.getNavController();
         navController.setGraph(R.navigation.mobile_navigation);
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
@@ -64,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
         // 初始化第一张壁纸
         prepareBackground();
         setBackground();
+
+        // 根据启动参数跳到不同页面
+        int startPage = getIntent().getIntExtra(START_PAGE_NAME, R.id.navigation_home);
+        if (startPage != R.id.navigation_home) {
+            navController.navigate(startPage);
+        }
     }
 
     /**
