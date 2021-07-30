@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -25,36 +26,28 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     private AssetManager assetManager;
-    private volatile Drawable nextBackground;
 
     private ValueAnimator blurAnimator;
+
+    private volatile Drawable nextBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        assetManager = getAssets();
-
+        // 初始化页面
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+        // 初始化导航栏
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_activity_main);
         NavController navController = navHostFragment.getNavController();
         navController.setGraph(R.navigation.mobile_navigation);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
+        // 资源管理器
+        assetManager = getAssets();
         // 加载字体
         FontLoader.loadAll(this);
-        // 随机轮换壁纸
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            setBackground();
-            prepareBackground();
-        });
         // 高斯模糊动画
         blurAnimator = ValueAnimator.ofInt(0, 10);
         blurAnimator.addUpdateListener(animation -> {
@@ -62,14 +55,20 @@ public class MainActivity extends AppCompatActivity {
             binding.backgroundBlur.setBlurRadius(currentValue);
             binding.backgroundBlur.requestLayout();
         });
-        // 初始化第一张壁纸
+        // 启动时先加载一张壁纸
         prepareBackground();
-        setBackground();
-
+        // 随机轮换壁纸
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            setBackground();
+            prepareBackground();
+        });
         // 根据启动参数跳到不同页面
-        int startPage = getIntent().getIntExtra(START_PAGE_NAME, R.id.navigation_home);
-        if (startPage != R.id.navigation_home) {
-            navController.navigate(startPage);
+        if (getIntent().hasExtra(START_PAGE_NAME)) {
+            NavDestination currentDestination = navController.getCurrentDestination();
+            int startPage = getIntent().getIntExtra(START_PAGE_NAME, R.id.navigation_home);
+            if (currentDestination == null || startPage != currentDestination.getId()) {
+                navController.navigate(startPage);
+            }
         }
     }
 
