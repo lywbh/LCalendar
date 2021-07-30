@@ -5,10 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-/**
- * 日期的类
- * Created by xiaozhu on 2016/8/7.
- */
 public class Day {
     /**
      * 单个日期格子的宽
@@ -25,11 +21,11 @@ public class Day {
     /**
      * 文本字体的颜色
      */
-    public int textClor;
+    public int textColor;
     /**
      * 当天年月日的文本
      */
-    public String dateText="-1";
+    public String dateText = "-1";
     /**
      * 日期背景的类型 0代表无任何背景，1代表正常打卡，2代表所选日期，3代表当前日期 4,代表即是当前日期，也被选中
      */
@@ -83,29 +79,22 @@ public class Day {
      */
     public void drawDays(Canvas canvas, Context context, Paint paint) {
         //取窄的边框为圆的半径
-        backgroundR = width > height ? height : width;
+        backgroundR = Math.min(width, height);
         //画背景
         drawBackground(canvas, paint);
-
         //画数字
-        drawTaxt(canvas, paint);
-
+        drawText(canvas, paint);
         //画考勤
         drawWorkState(canvas, paint);
-
-
     }
 
     /**
      * 画考勤
-     *
-     * @param canvas
-     * @param paint
      */
     private void drawWorkState(Canvas canvas, Paint paint) {
         //确定圆心位置
-        float cx = width / 2;
-        float xy = height * 44 / 60;
+        float cx = (float) width / 2;
+        float xy = (float) height * 44 / 60;
         paint.setStyle(Paint.Style.FILL);
         //根据工作状态设置画笔颜色
         if (workState == 0) {
@@ -121,38 +110,31 @@ public class Day {
             case 3:
                 paint.setColor(0xFF3E81ED);
                 break;
-
         }
         canvas.drawCircle(cx, xy, workStateR, paint);
     }
 
     /**
-     * 花数字
-     *
-     * @param canvas
-     * @param paint
+     * 画数字
      */
-    private void drawTaxt(Canvas canvas, Paint paint) {
+    private void drawText(Canvas canvas, Paint paint) {
         //根据圆的半径设置字体的大小
-        textSize = backgroundR / 3;
+        textSize = (float) backgroundR / 3;
         paint.setTextSize(textSize);
-        paint.setColor(textClor);
+        paint.setColor(textColor);
         paint.setStyle(Paint.Style.FILL);
         //计算文字的宽度
         Rect rect = new Rect();
         paint.getTextBounds(text, 0, text.length(), rect);
         int w = rect.width();
         //计算画文字的位置
-        float x = (width - w) / 2;
+        float x = (float) (width - w) / 2;
         float y = (height + textSize / 2) / 2;
         canvas.drawText(text, x, y, paint);
     }
 
     /**
      * 画背景
-     *
-     * @param canvas
-     * @param paint
      */
     private void drawBackground(Canvas canvas, Paint paint) {
         //画背景 根据背景状态设置画笔类型
@@ -175,11 +157,9 @@ public class Day {
                 break;
         }
         //计算圆心的位置
-        float cx = width / 2;
-        float cy = height / 2;
-        canvas.drawCircle(cx, cy, backgroundR * 9 / 20, paint);
-
+        float cx = (float) width / 2;
+        float cy = (float) height / 2;
+        canvas.drawCircle(cx, cy, (float) backgroundR * 9 / 20, paint);
     }
-
 
 }

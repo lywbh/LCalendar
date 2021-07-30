@@ -59,7 +59,7 @@ public class HomeFragment extends Fragment {
         SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
         // 日记记录
         SharedPreferences diarySp = getContext().getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
-        //日历绘制回调
+        // 日历绘制回调
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
             @Override
             public boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {

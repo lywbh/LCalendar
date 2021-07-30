@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * 自定义的日历控件
- * Created by xiaozhu on 2016/8/1.
- */
 public class CalendarView extends View {
 
     private final Context context;
@@ -42,7 +38,9 @@ public class CalendarView extends View {
      * 是否在本月里画其他月的日子
      */
     private boolean drawOtherDays = true;
-
+    /**
+     * 绘制回调
+     */
     private OnDrawDays onDrawDays;
 
     /**
@@ -92,27 +90,22 @@ public class CalendarView extends View {
         DayManager.setCurrentTime(calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR));
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         //获取day集合并绘制
         List<Day> days = DayManager.createDayByCalendar(calendar, getMeasuredWidth(), getMeasuredHeight(), drawOtherDays);
         for (Day day : days) {
-
             canvas.save();
             canvas.translate(day.location_x * day.width, day.location_y * day.height);
             if (this.onDrawDays == null || !onDrawDays.drawDay(day, canvas, context, paint)) {
                 day.drawDays(canvas, context, paint);
             }
-
             if (this.onDrawDays != null) {
                 onDrawDays.drawDayAbove(day, canvas, context, paint);
             }
-
             canvas.restore();
         }
-
     }
 
     private enum MotionType {LEFT, RIGHT, NONE}
