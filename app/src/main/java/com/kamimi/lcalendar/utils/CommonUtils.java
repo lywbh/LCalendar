@@ -1,7 +1,6 @@
 package com.kamimi.lcalendar.utils;
 
 import android.accounts.NetworkErrorException;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -22,6 +20,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import lombok.SneakyThrows;
 
 /**
  * 常用工具类
@@ -132,13 +132,9 @@ public class CommonUtils {
     /**
      * 解析时间字符串
      */
+    @SneakyThrows
     public static Date parseDate(String dateStr, String format) {
-        try {
-            return new SimpleDateFormat(format, Locale.CHINA).parse(dateStr);
-        } catch (ParseException e) {
-            Log.e("ERROR", "parseDate error", e);
-            return null;
-        }
+        return new SimpleDateFormat(format, Locale.CHINA).parse(dateStr);
     }
 
     /**

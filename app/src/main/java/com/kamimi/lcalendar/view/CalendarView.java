@@ -180,7 +180,7 @@ public class CalendarView extends View {
                 if (newCalendar == null) {
                     return;
                 }
-                String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-dd");
+                String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-d");
                 SharedPreferences.Editor editor = markSp.edit();
                 if (markSp.contains(day)) {
                     editor.remove(day);

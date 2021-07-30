@@ -17,7 +17,7 @@ public class NotificationData {
     private Integer id;
 
     /**
-     * 日期，yyyy-MM-dd
+     * 日期，yyyy-M-d
      */
     private String date;
 

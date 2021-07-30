@@ -19,9 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.Day;
 import com.kamimi.lcalendar.MainActivity;
 import com.kamimi.lcalendar.R;
+import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
 import com.kamimi.lcalendar.utils.FontLoader;
@@ -57,8 +59,8 @@ public class HomeFragment extends Fragment {
         binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
         // 爱心记录
         SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
-        // 日记记录
-        SharedPreferences diarySp = getContext().getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
+        // 日程记录
+        SharedPreferences notificationSp = getContext().getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
         // 日历绘制回调
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
             @Override
@@ -93,8 +95,12 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void drawDayAbove(Day day, Canvas canvas, Context context, Paint paint) {
+                if ("-1".equals(day.dateText)) {
+                    return;
+                }
+                String dateText = CommonUtils.dateFormat(CommonUtils.parseDate(day.dateText, "yyyy-M-dd"), "yyyy-M-d");
                 if (day.isCurrent && day.text.equals("01")) {
-                    String[] daySplit = day.dateText.split("-");
+                    String[] daySplit = dateText.split("-");
                     String msg = CommonUtils.monthToEn(Integer.parseInt(daySplit[1])) + "  " + daySplit[0];
                     if (!msg.equals(homeViewModel.getTitleText().getValue())) {
                         ((MainActivity) getActivity()).reBlurBackground();
@@ -103,32 +109,35 @@ public class HomeFragment extends Fragment {
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
                     }
                 }
-                // 画太阳
-                if (diarySp.contains(day.dateText)) {
-                    long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
+                // 画线
+                boolean containsLine = notificationSp.getAll().values()
+                        .stream().map(jsonStr -> JSONObject.parseObject((String) jsonStr, NotificationData.class).getDate())
+                        .anyMatch(date -> date.equals(dateText));
+                if (containsLine) {
+                    long randomSeed = new StringBuilder(dateText).reverse().toString().hashCode();
                     Bitmap bitmap;
-                    if ((bitmap = sunPicCache.get(day.dateText)) == null) {
+                    if ((bitmap = sunPicCache.get(dateText)) == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.line, option);
                         bitmap = randomSunRotate(randomSeed, bitmap);
                         bitmap = randomLineSize(randomSeed, bitmap);
-                        sunPicCache.put(day.dateText, bitmap);
+                        sunPicCache.put(dateText, bitmap);
                     }
                     float[] randomPos = randomSunPos(randomSeed);
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
                 }
                 // 画爱心
-                if (markSp.contains(day.dateText)) {
-                    long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
+                if (markSp.contains(dateText)) {
+                    long randomSeed = new StringBuilder(dateText).reverse().toString().hashCode();
                     Bitmap bitmap;
-                    if ((bitmap = heartPicCache.get(day.dateText)) == null) {
+                    if ((bitmap = heartPicCache.get(dateText)) == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);
                         bitmap = randomHeartRotate(randomSeed, bitmap);
                         bitmap = randomHeartSize(randomSeed, bitmap);
-                        heartPicCache.put(day.dateText, bitmap);
+                        heartPicCache.put(dateText, bitmap);
                     }
                     float[] randomPos = randomHeartPos(randomSeed);
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);

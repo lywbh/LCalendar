@@ -100,7 +100,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         String[] dateList = diarySp.getAll().keySet().toArray(new String[0]);
         Arrays.sort(dateList);
         // 插入列表项
-        String todayStr = CommonUtils.dateFormat(new Date(), "yyyy-M-dd");
+        String todayStr = CommonUtils.dateFormat(new Date(), "yyyy-M-d");
         if (dateList.length <= 0 || !todayStr.equals(dateList[dateList.length - 1])) {
             // 今天还没有日记，先生成一个空项放最前面
             mPreviews.add(DiaryPreview.createVirtual(todayStr));
@@ -299,7 +299,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
                 diarySp.edit().remove(date).apply();
                 int deletePos = holder.getBindingAdapterPosition();
-                if (CommonUtils.dateFormat(new Date(), "yyyy-M-dd").equals(date)) {
+                if (CommonUtils.dateFormat(new Date(), "yyyy-M-d").equals(date)) {
                     // 删掉的如果是今天的日记，复原一个虚拟项
                     mPreviews.set(deletePos, DiaryPreview.createVirtual(date));
                     notifyItemChanged(deletePos);
