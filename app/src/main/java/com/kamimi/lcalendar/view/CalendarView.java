@@ -18,8 +18,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class CalendarView extends View {
 
@@ -122,7 +122,7 @@ public class CalendarView extends View {
 
     private volatile long downTime;
     private volatile float posX, posY, curPosX;
-    private volatile Timer drawHeartTimer;
+    private volatile ScheduledFuture<?> drawHeartFuture;
 
     private static final long DRAW_HEART_HOLD_TIME = 500;
 
@@ -140,24 +140,24 @@ public class CalendarView extends View {
                 posY = y;
                 curPosX = x;
                 //半秒后画个心
-                if (drawHeartTimer == null) {
-                    drawHeartTimer = delayDrawHeart(event);
+                if (drawHeartFuture == null) {
+                    drawHeartFuture = delayDrawHeart(event);
                 }
                 return true;
             case MotionEvent.ACTION_MOVE:
-                if (drawHeartTimer != null
+                if (drawHeartFuture != null
                         && (Math.abs(event.getX() - posX) > 10 || Math.abs(event.getY() - posY) > 10)) {
                     //手指动了 取消画心
-                    drawHeartTimer.cancel();
-                    drawHeartTimer = null;
+                    drawHeartFuture.cancel(false);
+                    drawHeartFuture = null;
                 }
                 curPosX = event.getX();
                 return true;
             case MotionEvent.ACTION_UP:
-                if (drawHeartTimer != null) {
+                if (drawHeartFuture != null) {
                     //手指抬起了 取消画心
-                    drawHeartTimer.cancel();
-                    drawHeartTimer = null;
+                    drawHeartFuture.cancel(false);
+                    drawHeartFuture = null;
                 }
                 MotionType action = MotionType.NONE;
                 if (curPosX - posX > 100) {
@@ -175,29 +175,26 @@ public class CalendarView extends View {
         }
     }
 
-    private Timer delayDrawHeart(MotionEvent event) {
+    private ScheduledFuture<?> delayDrawHeart(MotionEvent event) {
         // 按住了delay时间以上，画爱心/取消
         float x = event.getX();
         float y = event.getY();
-        return CommonUtils.submitDelay(new TimerTask() {
-            @Override
-            public void run() {
-                //判断点击的是哪个日期
-                Calendar newCalendar = getCalendarByPosition(x, y);
-                if (newCalendar == null) {
-                    return;
-                }
-                String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-d");
-                SharedPreferences.Editor editor = SharedPreferencesLoader.markSp.edit();
-                if (SharedPreferencesLoader.markSp.contains(day)) {
-                    editor.remove(day);
-                } else {
-                    editor.putBoolean(day, true);
-                }
-                editor.commit();
-                invalidate();
+        return CommonUtils.submitDelay(() -> {
+            //判断点击的是哪个日期
+            Calendar newCalendar = getCalendarByPosition(x, y);
+            if (newCalendar == null) {
+                return;
             }
-        }, DRAW_HEART_HOLD_TIME);
+            String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-d");
+            SharedPreferences.Editor editor = SharedPreferencesLoader.markSp.edit();
+            if (SharedPreferencesLoader.markSp.contains(day)) {
+                editor.remove(day);
+            } else {
+                editor.putBoolean(day, true);
+            }
+            editor.commit();
+            invalidate();
+        }, DRAW_HEART_HOLD_TIME, TimeUnit.MILLISECONDS);
     }
 
     /**

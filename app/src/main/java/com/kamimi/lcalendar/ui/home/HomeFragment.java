@@ -188,7 +188,7 @@ public class HomeFragment extends Fragment {
      * 爱心随机旋转
      */
     private Bitmap randomHeartRotate(long seed, Bitmap origin) {
-        float alpha = CommonUtils.randomFloat(seed, 5, 45);
+        float alpha = CommonUtils.randomFloat(seed, 10, 40);
         return rotateBitmap(origin, alpha);
     }
 

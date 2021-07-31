@@ -51,7 +51,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
      */
     private final List<DiaryPreview> mPreviews;
 
-    // 滑动动画
+    /**
+     * 滑动动画
+     */
     private final ValueAnimator slideAnimator;
 
     /**
@@ -112,7 +114,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         }
     }
 
-    // 滑动相关参数
+    /**
+     * 滑动相关参数
+     */
     private volatile float touchStartPosX, touchStartWeight;
 
     @NonNull
@@ -269,8 +273,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                         float weight = (touchStartPosX - event.getX()) / 62 + touchStartWeight;
                         if (weight > 3) {
                             weight = 3;
-                        }
-                        else if (weight < 0) {
+                        } else if (weight < 0) {
                             weight = 0;
                         }
                         // 按钮跟随手指

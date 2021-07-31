@@ -14,11 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -30,26 +31,33 @@ import lombok.SneakyThrows;
  */
 public class CommonUtils {
 
-    private static final ExecutorService CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, "async-task-thread"));
+    private static final ExecutorService ASYNC_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, "async-task-thread"));
+    private static final ScheduledExecutorService DELAY_POOL = new ScheduledThreadPoolExecutor(4, r -> new Thread(r, "delay-task-thread"));
+
 
     /**
      * 提交异步任务
      */
     public static Future<?> submitTask(Runnable runnable) {
-        return CACHED_POOL.submit(runnable);
+        return ASYNC_POOL.submit(runnable);
     }
 
     public static <T> Future<T> submitTask(Callable<T> callable) {
-        return CACHED_POOL.submit(callable);
+        return ASYNC_POOL.submit(callable);
     }
 
     /**
      * 提交延迟任务
      */
-    public static Timer submitDelay(TimerTask task, long millis) {
-        Timer timer = new Timer();
-        timer.schedule(task, millis);
-        return timer;
+    public static ScheduledFuture<?> submitDelay(Runnable task, long delay, TimeUnit unit) {
+        return DELAY_POOL.schedule(task, delay, unit);
+    }
+
+    /**
+     * 提交延迟任务
+     */
+    public static <T> ScheduledFuture<T> submitDelay(Callable<T> task, long delay, TimeUnit unit) {
+        return DELAY_POOL.schedule(task, delay, unit);
     }
 
     /**
