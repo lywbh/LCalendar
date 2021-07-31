@@ -18,8 +18,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import lombok.SneakyThrows;
 
@@ -28,17 +30,17 @@ import lombok.SneakyThrows;
  */
 public class CommonUtils {
 
-    private static final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+    private static final ExecutorService CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, "async-task-thread"));
 
     /**
      * 提交异步任务
      */
     public static Future<?> submitTask(Runnable runnable) {
-        return cachedThreadPool.submit(runnable);
+        return CACHED_POOL.submit(runnable);
     }
 
     public static <T> Future<T> submitTask(Callable<T> callable) {
-        return cachedThreadPool.submit(callable);
+        return CACHED_POOL.submit(callable);
     }
 
     /**
@@ -106,19 +108,32 @@ public class CommonUtils {
      */
     public static String monthToEn(int i) {
         switch (i) {
-            case 1: return "January";
-            case 2: return "February";
-            case 3: return "March";
-            case 4: return "April";
-            case 5: return "May";
-            case 6: return "June";
-            case 7: return "July";
-            case 8: return "August";
-            case 9: return "September";
-            case 10: return "October";
-            case 11: return "November";
-            case 12: return "December";
-            default: throw new IllegalArgumentException("Invalid month number:" + i);
+            case 1:
+                return "January";
+            case 2:
+                return "February";
+            case 3:
+                return "March";
+            case 4:
+                return "April";
+            case 5:
+                return "May";
+            case 6:
+                return "June";
+            case 7:
+                return "July";
+            case 8:
+                return "August";
+            case 9:
+                return "September";
+            case 10:
+                return "October";
+            case 11:
+                return "November";
+            case 12:
+                return "December";
+            default:
+                throw new IllegalArgumentException("Invalid month number:" + i);
         }
     }
 

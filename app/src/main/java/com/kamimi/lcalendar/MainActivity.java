@@ -1,7 +1,6 @@
 package com.kamimi.lcalendar;
 
 import android.animation.ValueAnimator;
-import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +15,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.kamimi.lcalendar.databinding.ActivityMainBinding;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.kamimi.lcalendar.utils.CommonUtils;
+import com.kamimi.lcalendar.utils.SharedPreferencesLoader;
 
 import java.io.IOException;
 
@@ -24,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String START_PAGE_NAME = "startPage";
 
     private ActivityMainBinding binding;
-
-    private AssetManager assetManager;
 
     private ValueAnimator blurAnimator;
 
@@ -44,10 +42,10 @@ public class MainActivity extends AppCompatActivity {
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-        // 资源管理器
-        assetManager = getAssets();
         // 加载字体
-        FontLoader.loadAll(this);
+        FontLoader.load(this);
+        // 加载数据库
+        SharedPreferencesLoader.load(this);
         // 高斯模糊动画
         blurAnimator = ValueAnimator.ofInt(0, 10);
         blurAnimator.addUpdateListener(animation -> {
@@ -77,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void prepareBackground() {
         try {
-            String[] bgNames = assetManager.list("background");
+            String[] bgNames = getAssets().list("background");
             String bgName = CommonUtils.randomFrom(bgNames);
-            nextBackground = Drawable.createFromStream(assetManager.open("background/" + bgName), bgName);
+            nextBackground = Drawable.createFromStream(getAssets().open("background/" + bgName), bgName);
         } catch (IOException e) {
             Log.e("ERROR", "background fetch error", e);
         }
@@ -91,15 +89,8 @@ public class MainActivity extends AppCompatActivity {
     private void setBackground() {
         if (nextBackground != null) {
             binding.background.setBackground(nextBackground);
-            reBlurBackground();
+            blurAnimator.start();
         }
-    }
-
-    /**
-     * 重绘壁纸的模糊动画
-     */
-    public void reBlurBackground() {
-        blurAnimator.start();
     }
 
 }

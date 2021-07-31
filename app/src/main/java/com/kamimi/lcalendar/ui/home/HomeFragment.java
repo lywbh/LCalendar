@@ -1,7 +1,6 @@
 package com.kamimi.lcalendar.ui.home;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -20,12 +19,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.Day;
-import com.kamimi.lcalendar.MainActivity;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.obj.NotificationData;
 import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
 import com.kamimi.lcalendar.utils.FontLoader;
+import com.kamimi.lcalendar.utils.SharedPreferencesLoader;
 import com.kamimi.lcalendar.view.CalendarView;
 
 public class HomeFragment extends Fragment {
@@ -43,8 +42,8 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
 
         homeViewModel.getTitleText().observe(getViewLifecycleOwner(), binding.titleHome::setText);
-        homeViewModel.getMText().observe(getViewLifecycleOwner(), binding.textHome::setText);
-        homeViewModel.getHText().observe(getViewLifecycleOwner(), binding.textHitokoto::setText);
+        homeViewModel.getMainText().observe(getViewLifecycleOwner(), binding.textHome::setText);
+        homeViewModel.getHintText().observe(getViewLifecycleOwner(), binding.textHitokoto::setText);
 
         return binding.getRoot();
     }
@@ -56,18 +55,14 @@ public class HomeFragment extends Fragment {
         binding.titleHome.setTypeface(FontLoader.ldzsFont);
         binding.textHome.setTypeface(FontLoader.ldzsFont);
         binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
-        // 爱心记录
-        SharedPreferences markSp = getContext().getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
-        // 日程记录
-        SharedPreferences notificationSp = getContext().getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
         // 日历绘制回调
         binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
             @Override
             public boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {
-                float x = day.location_x + 30, y = day.location_y + 100;
+                float x = day.locationX + 30, y = day.locationY + 100;
                 Paint p = new Paint(paint);
                 p.setARGB(155, 34,26,44);
-                if (day.dateText.equals("-1")) {
+                if ("-1".equals(day.dateText)) {
                     p.setTypeface(FontLoader.ldzsFont);
                     p.setTextSize(50);
                 } else if (day.isCurrent) {
@@ -97,46 +92,46 @@ public class HomeFragment extends Fragment {
                 if ("-1".equals(day.dateText)) {
                     return;
                 }
-                String dateText = CommonUtils.dateFormat(CommonUtils.parseDate(day.dateText, "yyyy-M-dd"), "yyyy-M-d");
-                if (day.isCurrent && day.text.equals("01")) {
-                    String[] daySplit = dateText.split("-");
+                // 画日历时，更新头上的年月
+                // 这个判断意思是在画每个月一号的时候更新一下
+                if (day.isCurrent && "1".equals(day.text)) {
+                    String[] daySplit = day.dateText.split("-");
                     String msg = CommonUtils.monthToEn(Integer.parseInt(daySplit[1])) + "  " + daySplit[0];
                     if (!msg.equals(homeViewModel.getTitleText().getValue())) {
-                        ((MainActivity) getActivity()).reBlurBackground();
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.hide));
                         homeViewModel.getTitleText().setValue(msg);
                         binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
                     }
                 }
-                // 画线
-                boolean containsLine = notificationSp.getAll().values()
+                // 画线（通知标记）
+                boolean containsLine = SharedPreferencesLoader.notificationSp.getAll().values()
                         .stream().map(jsonStr -> JSONObject.parseObject((String) jsonStr, NotificationData.class).getDate())
-                        .anyMatch(date -> date.equals(dateText));
+                        .anyMatch(date -> date.equals(day.dateText));
                 if (containsLine) {
-                    long randomSeed = new StringBuilder(dateText).reverse().toString().hashCode();
+                    long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
                     Bitmap bitmap;
-                    if ((bitmap = sunPicCache.get(dateText)) == null) {
+                    if ((bitmap = sunPicCache.get(day.dateText)) == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.line, option);
                         bitmap = randomSunRotate(randomSeed, bitmap);
                         bitmap = randomLineSize(randomSeed, bitmap);
-                        sunPicCache.put(dateText, bitmap);
+                        sunPicCache.put(day.dateText, bitmap);
                     }
                     float[] randomPos = randomSunPos(randomSeed);
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
                 }
-                // 画爱心
-                if (markSp.contains(dateText)) {
-                    long randomSeed = new StringBuilder(dateText).reverse().toString().hashCode();
+                // 画爱心（自定义标记）
+                if (SharedPreferencesLoader.markSp.contains(day.dateText)) {
+                    long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
                     Bitmap bitmap;
-                    if ((bitmap = heartPicCache.get(dateText)) == null) {
+                    if ((bitmap = heartPicCache.get(day.dateText)) == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);
                         bitmap = randomHeartRotate(randomSeed, bitmap);
                         bitmap = randomHeartSize(randomSeed, bitmap);
-                        heartPicCache.put(dateText, bitmap);
+                        heartPicCache.put(day.dateText, bitmap);
                     }
                     float[] randomPos = randomHeartPos(randomSeed);
                     canvas.drawBitmap(bitmap, randomPos[0], randomPos[1], paint);
@@ -204,12 +199,12 @@ public class HomeFragment extends Fragment {
         float scaleHeight = ((float) h) / height;
         Matrix matrix = new Matrix();
         matrix.postScale(scaleWidth, scaleHeight);
-        Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, true);
-        if (newBM.equals(origin)) {
-            return newBM;
+        Bitmap newBm = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, true);
+        if (newBm.equals(origin)) {
+            return newBm;
         }
         origin.recycle();
-        return newBM;
+        return newBm;
     }
 
     /**
@@ -223,12 +218,12 @@ public class HomeFragment extends Fragment {
         int height = origin.getHeight();
         Matrix matrix = new Matrix();
         matrix.setRotate(alpha);
-        Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
-        if (newBM.equals(origin)) {
-            return newBM;
+        Bitmap newBm = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+        if (newBm.equals(origin)) {
+            return newBm;
         }
         origin.recycle();
-        return newBM;
+        return newBm;
     }
 
 }

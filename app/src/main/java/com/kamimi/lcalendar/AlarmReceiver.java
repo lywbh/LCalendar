@@ -41,7 +41,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // 创建跳转动作
         Intent nextIntent = new Intent(context, MainActivity.class)
                 .putExtra(MainActivity.START_PAGE_NAME, R.id.navigation_notifications);
-        PendingIntent pi = PendingIntent.getActivity(context, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getActivity(context, data.getId(), nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         // 构造参数
         final NotificationUtils.NotifyObject params = NotificationUtils.paramBuilder()
                 .icon(R.mipmap.heart)

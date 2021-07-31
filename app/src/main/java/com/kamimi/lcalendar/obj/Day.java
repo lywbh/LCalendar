@@ -39,21 +39,13 @@ public class Day {
      */
     public int backgroundR;
     /**
-     * 出勤的类型 0为不画，1为正常考勤，2为异常，3为出差外出灯
-     */
-    public int workState;
-    /**
-     * 出勤状态的半径
-     */
-    public int workStateR = 5;
-    /**
      * 字体在第几行
      */
-    public int location_x;
+    public int locationX;
     /**
      * 字体在第几列
      */
-    public int location_y;
+    public int locationY;
     /**
      * 是否是本月
      */
@@ -84,34 +76,6 @@ public class Day {
         drawBackground(canvas, paint);
         //画数字
         drawText(canvas, paint);
-        //画考勤
-        drawWorkState(canvas, paint);
-    }
-
-    /**
-     * 画考勤
-     */
-    private void drawWorkState(Canvas canvas, Paint paint) {
-        //确定圆心位置
-        float cx = (float) width / 2;
-        float xy = (float) height * 44 / 60;
-        paint.setStyle(Paint.Style.FILL);
-        //根据工作状态设置画笔颜色
-        if (workState == 0) {
-            return;
-        }
-        switch (workState) {
-            case 1:
-                paint.setColor(0xFF46CC6E);
-                break;
-            case 2:
-                paint.setColor(0xFFF16269);
-                break;
-            case 3:
-                paint.setColor(0xFF3E81ED);
-                break;
-        }
-        canvas.drawCircle(cx, xy, workStateR, paint);
     }
 
     /**
@@ -154,6 +118,8 @@ public class Day {
                 paint.setColor(0xFF457BF4);
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(3);
+                break;
+            default:
                 break;
         }
         //计算圆心的位置

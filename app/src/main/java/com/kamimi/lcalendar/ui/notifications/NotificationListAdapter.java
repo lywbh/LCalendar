@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.text.Editable;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -25,6 +24,7 @@ import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.utils.DialogUtils;
 import com.kamimi.lcalendar.utils.FontLoader;
 import com.kamimi.lcalendar.utils.IdGenerator;
+import com.kamimi.lcalendar.utils.SharedPreferencesLoader;
 import com.stone.pile.libs.PileLayout;
 
 import java.util.Comparator;
@@ -47,11 +47,6 @@ public class NotificationListAdapter extends PileLayout.Adapter {
     private final IdGenerator idGenerator;
 
     /**
-     * 日程数据库
-     */
-    private final SharedPreferences notificationSp;
-
-    /**
      * 操作这个即可控制列表项内容
      */
     private final List<NotificationData> dataList;
@@ -61,9 +56,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         this.binding = binding;
         this.layerController = layerController;
         this.alarmManager = (AlarmManager) context.getSystemService(Service.ALARM_SERVICE);
-        // 初始化数据
-        notificationSp = this.context.getSharedPreferences("LCalendarNotificationSp", Context.MODE_PRIVATE);
-        this.dataList = notificationSp.getAll()
+        this.dataList = SharedPreferencesLoader.notificationSp.getAll()
                 .values().stream()
                 .map(jsonStr -> JSONObject.parseObject((String) jsonStr, NotificationData.class))
                 .sorted(Comparator.comparing(NotificationData::getId))
@@ -106,7 +99,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
         deleteButton.setOnClickListener(v -> DialogUtils.confirm(context, "要删除日程吗", "确认", "取消", (dialog, witch) -> {
             NotificationData dataItem = dataList.get(index);
             // 删除数据库
-            notificationSp.edit().remove(dataItem.getId().toString()).apply();
+            SharedPreferencesLoader.notificationSp.edit().remove(dataItem.getId().toString()).apply();
             // 删除闹钟
             cancelAlarm(dataItem);
             // 更新UI
@@ -119,11 +112,11 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             // 修改UI数据
             dataItem.setNotifyOn(switchView.isChecked());
             // 存储到数据库
-            String jsonStr = notificationSp.getString(dataItem.getId().toString(), null);
+            String jsonStr = SharedPreferencesLoader.notificationSp.getString(dataItem.getId().toString(), null);
             NotificationData dbData = JSONObject.parseObject(jsonStr, NotificationData.class);
             dbData.setNotifyOn(dataItem.isNotifyOn());
             jsonStr = JSONObject.toJSONString(dbData);
-            notificationSp.edit().putString(dataItem.getId().toString(), jsonStr).apply();
+            SharedPreferencesLoader.notificationSp.edit().putString(dataItem.getId().toString(), jsonStr).apply();
             // 添加/删除闹钟
             if (dataItem.isNotifyOn()) {
                 setAlarm(dataItem);
@@ -189,7 +182,7 @@ public class NotificationListAdapter extends PileLayout.Adapter {
                 }
                 fillDataFromEditor(data);
                 // 写入数据库
-                notificationSp.edit().putString(data.getId().toString(), JSONObject.toJSONString(data)).apply();
+                SharedPreferencesLoader.notificationSp.edit().putString(data.getId().toString(), JSONObject.toJSONString(data)).apply();
                 // 刷新UI，这一步会触发闹钟开关切换，即自动关闭该闹钟
                 binding.pileLayout.notifyDataSetChanged();
                 DialogUtils.toast(context, "保存成功");

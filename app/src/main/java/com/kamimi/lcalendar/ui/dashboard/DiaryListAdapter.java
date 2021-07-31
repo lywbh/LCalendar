@@ -27,6 +27,7 @@ import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.obj.DiaryPreview;
 import com.kamimi.lcalendar.utils.FontLoader;
+import com.kamimi.lcalendar.utils.SharedPreferencesLoader;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -96,8 +97,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
      */
     private void loadDataList() {
         // 日记数据库
-        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE);
-        String[] dateList = diarySp.getAll().keySet().toArray(new String[0]);
+        String[] dateList = SharedPreferencesLoader.diarySp.getAll().keySet().toArray(new String[0]);
         Arrays.sort(dateList);
         // 插入列表项
         String todayStr = CommonUtils.dateFormat(new Date(), "yyyy-M-d");
@@ -107,7 +107,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
         }
         for (int i = dateList.length - 1; i >= 0; --i) {
             // 日期从新到旧插入到列表中
-            String content = diarySp.getString(dateList[i], "");
+            String content = SharedPreferencesLoader.diarySp.getString(dateList[i], "");
             mPreviews.add(DiaryPreview.createNormal(dateList[i], content));
         }
     }
@@ -124,7 +124,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
 
         View viewItem = view.findViewById(R.id.diary_list_item); // 左侧的内容
         Button deleteButton = view.findViewWithTag("diary_delete_button"); // 右侧的删除按钮
-        SharedPreferences diarySp = context.getSharedPreferences("LCalendarDiarySp", Context.MODE_PRIVATE); // 日记数据库
 
         // 列表项点击事件
         viewItem.setOnClickListener(v -> {
@@ -145,7 +144,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
             diaryCancelButton.setTypeface(FontLoader.ldzsFont);
             // 日记内容填充到界面上
             String date = mPreviews.get(holder.getBindingAdapterPosition()).getDate();
-            String content = diarySp.getString(date, "");
+            String content = SharedPreferencesLoader.diarySp.getString(date, "");
             diaryDetailText.setText(content);
             // 编辑框焦点变更
             diaryEditorText.setOnFocusChangeListener((v1, hasFocus) -> {
@@ -169,7 +168,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 if (editorText.length() == 0) {
                     DialogUtils.toast(context, "写点什么再保存吧~");
                 } else {
-                    diarySp.edit().putString(date, editorText.toString()).apply();
+                    SharedPreferencesLoader.diarySp.edit().putString(date, editorText.toString()).apply();
                     diaryDetailText.setText(editorText);
                     diaryDetailPanel.setVisibility(View.VISIBLE);
                     diaryEditorPanel.setVisibility(View.GONE);
@@ -241,6 +240,8 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                             v.performClick();
                         }
                         break;
+                    default:
+                        break;
                 }
                 return true;
             });
@@ -266,8 +267,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     case MotionEvent.ACTION_MOVE:
                         // 按钮最多拖到长度为3，太长了不好看
                         float weight = (touchStartPosX - event.getX()) / 62 + touchStartWeight;
-                        if (weight > 3) weight = 3;
-                        else if (weight < 0) weight = 0;
+                        if (weight > 3) {
+                            weight = 3;
+                        }
+                        else if (weight < 0) {
+                            weight = 0;
+                        }
                         // 按钮跟随手指
                         deleteButton.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, weight));
                         deleteButton.requestLayout();
@@ -283,9 +288,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                     case MotionEvent.ACTION_CANCEL:
                         // 发生纵向移动或移出了边界，判断当前按钮挪出了多少，如果超过一半直接带出来，否则复位隐藏
                         float currentWeight = ((LinearLayout.LayoutParams) deleteButton.getLayoutParams()).weight;
-                        if (currentWeight >= 1.5) weight = 3;
-                        else weight = 0;
-                        AnimUtils.toggleWeightAnim(deleteButton, currentWeight, weight);
+                        AnimUtils.toggleWeightAnim(deleteButton, currentWeight, currentWeight >= 1.5 ? 3 : 0);
+                        break;
+                    default:
                         break;
                 }
                 return true;
@@ -297,7 +302,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.Diar
                 AnimUtils.toggleWeightAnim(deleteButton, currentWeight, 0);
                 // 删除数据库
                 String date = ((TextView) viewItem.findViewWithTag("diary_date")).getText().toString();
-                diarySp.edit().remove(date).apply();
+                SharedPreferencesLoader.diarySp.edit().remove(date).apply();
                 int deletePos = holder.getBindingAdapterPosition();
                 if (CommonUtils.dateFormat(new Date(), "yyyy-M-d").equals(date)) {
                     // 删掉的如果是今天的日记，复原一个虚拟项

@@ -12,10 +12,12 @@ import android.view.animation.AnimationUtils;
 import com.kamimi.lcalendar.obj.Day;
 import com.kamimi.lcalendar.R;
 import com.kamimi.lcalendar.utils.CommonUtils;
+import com.kamimi.lcalendar.utils.SharedPreferencesLoader;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -59,7 +61,6 @@ public class CalendarView extends View {
     public CalendarView(Context context) {
         super(context);
         this.context = context;
-        //初始化控件
         initView();
     }
 
@@ -67,14 +68,12 @@ public class CalendarView extends View {
     public CalendarView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        //初始化控件
         initView();
     }
 
     public CalendarView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
-        //初始化控件
         initView();
     }
 
@@ -84,7 +83,7 @@ public class CalendarView extends View {
     private void initView() {
         paint = new Paint();
         paint.setAntiAlias(true);
-        calendar = Calendar.getInstance();
+        calendar = Calendar.getInstance(Locale.CHINA);
         DayManager.setCurrent(calendar.get((Calendar.DAY_OF_MONTH)));
         DayManager.setTempcurrent(calendar.get(Calendar.DAY_OF_MONTH));
         DayManager.setCurrentTime(calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR));
@@ -92,12 +91,10 @@ public class CalendarView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        //获取day集合并绘制
         List<Day> days = DayManager.createDayByCalendar(calendar, getMeasuredWidth(), getMeasuredHeight(), drawOtherDays);
         for (Day day : days) {
             canvas.save();
-            canvas.translate(day.location_x * day.width, day.location_y * day.height);
+            canvas.translate(day.locationX * day.width, day.locationY * day.height);
             if (this.onDrawDays == null || !onDrawDays.drawDay(day, canvas, context, paint)) {
                 day.drawDays(canvas, context, paint);
             }
@@ -108,7 +105,20 @@ public class CalendarView extends View {
         }
     }
 
-    private enum MotionType {LEFT, RIGHT, NONE}
+    private enum MotionType {
+        /**
+         * 左滑
+         */
+        LEFT,
+        /**
+         * 右滑
+         */
+        RIGHT,
+        /**
+         * 无滑动
+         */
+        NONE
+    }
 
     private volatile long downTime;
     private volatile float posX, posY, curPosX;
@@ -155,8 +165,6 @@ public class CalendarView extends View {
                 } else if (curPosX - posX < -100) {
                     action = MotionType.RIGHT;
                 }
-                posX = 0;
-                curPosX = 0;
                 boolean dragTriggered = dragEvent(action);
                 if (!dragTriggered) {
                     // 选日期事件
@@ -174,15 +182,14 @@ public class CalendarView extends View {
         return CommonUtils.submitDelay(new TimerTask() {
             @Override
             public void run() {
-                SharedPreferences markSp = context.getSharedPreferences("LCalendarMarkSp", Context.MODE_PRIVATE);
                 //判断点击的是哪个日期
                 Calendar newCalendar = getCalendarByPosition(x, y);
                 if (newCalendar == null) {
                     return;
                 }
                 String day = CommonUtils.dateFormat(newCalendar.getTime(), "yyyy-M-d");
-                SharedPreferences.Editor editor = markSp.edit();
-                if (markSp.contains(day)) {
+                SharedPreferences.Editor editor = SharedPreferencesLoader.markSp.edit();
+                if (SharedPreferencesLoader.markSp.contains(day)) {
                     editor.remove(day);
                 } else {
                     editor.putBoolean(day, true);
