@@ -33,6 +33,9 @@ public class HomeFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private FragmentHomeBinding binding;
 
+    /**
+     * 日历图标缓存
+     */
     private final LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
     private final LruCache<String, Bitmap> sunPicCache = new LruCache<>(31);
 

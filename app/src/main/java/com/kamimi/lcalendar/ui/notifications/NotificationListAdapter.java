@@ -1,16 +1,21 @@
 package com.kamimi.lcalendar.ui.notifications;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.provider.Settings;
 import android.text.Editable;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.core.app.NotificationManagerCompat;
 
 import com.alibaba.fastjson.JSONObject;
 import com.duma.ld.mylibrary.SwitchView;
@@ -119,10 +124,34 @@ public class NotificationListAdapter extends PileLayout.Adapter {
             SharedPreferencesLoader.notificationSp.edit().putString(dataItem.getId().toString(), jsonStr).apply();
             // 添加/删除闹钟
             if (dataItem.isNotifyOn()) {
-                setAlarm(dataItem);
+                if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+                    setAlarm(dataItem);
+                } else {
+                    switchView.setChecked(false);
+                    askForNotifyOn();
+                }
             } else {
                 cancelAlarm(dataItem);
             }
+        });
+    }
+
+    /**
+     * 提示用户去开启通知
+     */
+    private void askForNotifyOn() {
+        DialogUtils.confirm(context, "开启失败", "开启日程提醒需要授权APP发送通知", "去开启", "取消", (dialog, witch) -> {
+            Intent intent = new Intent();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+                intent.putExtra(Notification.EXTRA_CHANNEL_ID, context.getApplicationInfo().uid);
+            } else {
+                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                intent.putExtra("app_package", context.getPackageName());
+                intent.putExtra("app_uid", context.getApplicationInfo().uid);
+            }
+            context.startActivity(intent);
         });
     }
 

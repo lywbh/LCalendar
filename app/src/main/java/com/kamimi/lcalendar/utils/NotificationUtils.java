@@ -83,6 +83,7 @@ public class NotificationUtils {
                 .setSound(null)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
+                .setNumber(1)
                 .build();
         mNotifyMgr.notify(nid, notification);
     }

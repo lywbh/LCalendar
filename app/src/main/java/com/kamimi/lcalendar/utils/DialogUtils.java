@@ -51,6 +51,15 @@ public class DialogUtils {
     }
 
     /**
+     * 确认框（仅设置确认回调）
+     */
+    public static AlertDialog confirm(Context context, String title, String message,
+                                      String positiveText, String negativeText,
+                                      DialogInterface.OnClickListener positiveHandler) {
+        return confirm(context, title, message, positiveText, negativeText, positiveHandler, null, null);
+    }
+
+    /**
      * 确认框（无标题）
      */
     public static AlertDialog confirm(Context context, String message,
