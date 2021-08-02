@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CalendarView extends View {
 
-    private final Context context;
     /**
      * 画笔
      */
@@ -41,39 +40,27 @@ public class CalendarView extends View {
      */
     private boolean drawOtherDays = true;
     /**
-     * 绘制回调
+     * 绘制月回调
      */
-    private OnDrawDays onDrawDays;
-
+    private OnDrawMonth onDrawMonth;
     /**
-     * 改变日期，并更改当前状态，由于绘图是在calendar基础上进行绘制的，所以改变calendar就可以改变图片
+     * 绘制天回调
      */
-    public void setCalendar(Calendar calendar) {
-        this.calendar = calendar;
-        if ((calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR)).equals(DayManager.getCurrentTime())) {
-            DayManager.setCurrent(DayManager.getTempcurrent());
-        } else {
-            DayManager.setCurrent(-1);
-        }
-        invalidate();
-    }
+    private OnDrawDay onDrawDay;
 
     public CalendarView(Context context) {
         super(context);
-        this.context = context;
         initView();
     }
 
 
     public CalendarView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.context = context;
         initView();
     }
 
     public CalendarView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.context = context;
         initView();
     }
 
@@ -85,21 +72,39 @@ public class CalendarView extends View {
         paint.setAntiAlias(true);
         calendar = Calendar.getInstance(Locale.CHINA);
         DayManager.setCurrent(calendar.get((Calendar.DAY_OF_MONTH)));
-        DayManager.setTempcurrent(calendar.get(Calendar.DAY_OF_MONTH));
+        DayManager.setTempCurrent(calendar.get(Calendar.DAY_OF_MONTH));
         DayManager.setCurrentTime(calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR));
+    }
+
+    /**
+     * 改变日期，并更改当前状态，由于绘图是在calendar基础上进行绘制的，所以改变calendar就可以改变图片
+     */
+    public void setCalendar(Calendar calendar) {
+        this.calendar = calendar;
+        if ((calendar.get(Calendar.MONTH) + "" + calendar.get(Calendar.YEAR)).equals(DayManager.getCurrentTime())) {
+            DayManager.setCurrent(DayManager.getTempCurrent());
+        } else {
+            DayManager.setCurrent(-1);
+        }
+        invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        if (onDrawMonth != null) {
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            onDrawMonth.drawMonth(year, month, canvas, paint);
+        }
         List<Day> days = DayManager.createDayByCalendar(calendar, getMeasuredWidth(), getMeasuredHeight(), drawOtherDays);
         for (Day day : days) {
             canvas.save();
             canvas.translate(day.locationX * day.width, day.locationY * day.height);
-            if (this.onDrawDays == null || !onDrawDays.drawDay(day, canvas, context, paint)) {
-                day.drawDays(canvas, context, paint);
+            if (this.onDrawDay == null || !onDrawDay.drawDay(day, canvas, paint)) {
+                day.drawDay(canvas, paint);
             }
-            if (this.onDrawDays != null) {
-                onDrawDays.drawDayAbove(day, canvas, context, paint);
+            if (this.onDrawDay != null) {
+                onDrawDay.drawDayAbove(day, canvas, paint);
             }
             canvas.restore();
         }
@@ -265,13 +270,6 @@ public class CalendarView extends View {
     }
 
     /**
-     * 设置日期选择改变监听
-     */
-    public void setOnSelectChangeListener(OnSelectChangeListener listener) {
-        this.listener = listener;
-    }
-
-    /**
      * 是否画本月外其他日子
      *
      * @param drawOtherDays true 表示画，false表示不画 ，默认为true
@@ -282,6 +280,27 @@ public class CalendarView extends View {
     }
 
     /**
+     * 设置日期选择改变监听
+     */
+    public void setOnSelectChangeListener(OnSelectChangeListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * 设置画天数回调
+     */
+    public void setOnDrawMonth(OnDrawMonth onDrawMonth) {
+        this.onDrawMonth = onDrawMonth;
+    }
+
+    /**
+     * 设置画天数回调
+     */
+    public void setOnDrawDay(OnDrawDay onDrawDay) {
+        this.onDrawDay = onDrawDay;
+    }
+
+    /**
      * 日期选择改变监听的接口
      */
     public interface OnSelectChangeListener {
@@ -289,26 +308,30 @@ public class CalendarView extends View {
     }
 
     /**
-     * 画天数回调
+     * 画天数回调（每画一天执行一次）
      */
-    public interface OnDrawDays {
+    public interface OnDrawDay {
         /**
          * 层次在原画下
-         * 画天的回调，返回true 则覆盖默认的画面，返回
+         *
+         * @return true-覆盖默认的画面，false-不覆盖
          */
-        default boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {
+        default boolean drawDay(Day day, Canvas canvas, Paint paint) {
             return false;
         }
 
         /**
          * 层次在原画上
          */
-        default void drawDayAbove(Day day, Canvas canvas, Context context, Paint paint) {
+        default void drawDayAbove(Day day, Canvas canvas, Paint paint) {
         }
     }
 
-    public void setOnDrawDays(OnDrawDays onDrawDays) {
-        this.onDrawDays = onDrawDays;
+    /**
+     * 画月份回调（每画一个月执行一次）
+     */
+    public interface OnDrawMonth {
+        void drawMonth(int year, int month, Canvas canvas, Paint paint);
     }
 
 }

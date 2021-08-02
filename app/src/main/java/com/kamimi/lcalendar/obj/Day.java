@@ -1,6 +1,5 @@
 package com.kamimi.lcalendar.obj;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -27,7 +26,7 @@ public class Day {
      */
     public String dateText = "-1";
     /**
-     * 日期背景的类型 0代表无任何背景，1代表正常打卡，2代表所选日期，3代表当前日期 4,代表即是当前日期，也被选中
+     * 日期背景的类型 1代表默认状态，2代表所选日期，3代表当前日期
      */
     public int backgroundStyle;
     /**
@@ -67,9 +66,8 @@ public class Day {
      *
      * @param canvas  要画的画布
      * @param paint   画笔
-     * @param context 画布的上下文对象
      */
-    public void drawDays(Canvas canvas, Context context, Paint paint) {
+    public void drawDay(Canvas canvas, Paint paint) {
         //取窄的边框为圆的半径
         backgroundR = Math.min(width, height);
         //画背景
@@ -102,9 +100,6 @@ public class Day {
      */
     private void drawBackground(Canvas canvas, Paint paint) {
         //画背景 根据背景状态设置画笔类型
-        if (backgroundStyle == 0) {
-            return;
-        }
         switch (backgroundStyle) {
             case 1:
                 paint.setColor(0xFFECF1F4);

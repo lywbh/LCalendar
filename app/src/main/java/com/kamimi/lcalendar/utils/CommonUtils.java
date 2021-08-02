@@ -11,8 +11,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +36,21 @@ public class CommonUtils {
 
     private static final ExecutorService ASYNC_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, "async-task-thread"));
     private static final ScheduledExecutorService DELAY_POOL = new ScheduledThreadPoolExecutor(4, r -> new Thread(r, "delay-task-thread"));
-
+    private static final Map<Integer, String> monthNameMap = new HashMap<>();
+    static {
+        monthNameMap.put(Calendar.JANUARY, "January");
+        monthNameMap.put(Calendar.FEBRUARY, "February");
+        monthNameMap.put(Calendar.MARCH, "March");
+        monthNameMap.put(Calendar.APRIL, "April");
+        monthNameMap.put(Calendar.MAY, "May");
+        monthNameMap.put(Calendar.JUNE, "June");
+        monthNameMap.put(Calendar.JULY, "July");
+        monthNameMap.put(Calendar.AUGUST, "August");
+        monthNameMap.put(Calendar.SEPTEMBER, "September");
+        monthNameMap.put(Calendar.OCTOBER, "October");
+        monthNameMap.put(Calendar.NOVEMBER, "November");
+        monthNameMap.put(Calendar.DECEMBER, "December");
+    }
 
     /**
      * 提交异步任务
@@ -113,36 +130,10 @@ public class CommonUtils {
 
     /**
      * 月份转英文名称
+     * 注意，Calendar的月份枚举是0~11
      */
-    public static String monthToEn(int i) {
-        switch (i) {
-            case 1:
-                return "January";
-            case 2:
-                return "February";
-            case 3:
-                return "March";
-            case 4:
-                return "April";
-            case 5:
-                return "May";
-            case 6:
-                return "June";
-            case 7:
-                return "July";
-            case 8:
-                return "August";
-            case 9:
-                return "September";
-            case 10:
-                return "October";
-            case 11:
-                return "November";
-            case 12:
-                return "December";
-            default:
-                throw new IllegalArgumentException("Invalid month number:" + i);
-        }
+    public static String monthToEn(int month) {
+        return monthNameMap.get(month);
     }
 
     /**

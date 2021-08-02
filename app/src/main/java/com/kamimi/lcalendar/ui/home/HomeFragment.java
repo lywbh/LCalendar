@@ -1,6 +1,5 @@
 package com.kamimi.lcalendar.ui.home;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -20,7 +19,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.alibaba.fastjson.JSONObject;
 import com.kamimi.lcalendar.obj.Day;
 import com.kamimi.lcalendar.R;
+import com.kamimi.lcalendar.obj.GlobalConstants;
 import com.kamimi.lcalendar.obj.NotificationData;
+import com.kamimi.lcalendar.obj.RGB;
 import com.kamimi.lcalendar.utils.CommonUtils;
 import com.kamimi.lcalendar.databinding.FragmentHomeBinding;
 import com.kamimi.lcalendar.utils.FontLoader;
@@ -34,6 +35,17 @@ public class HomeFragment extends Fragment {
 
     private final LruCache<String, Bitmap> heartPicCache = new LruCache<>(31);
     private final LruCache<String, Bitmap> sunPicCache = new LruCache<>(31);
+
+    /**
+     * 日历字体相关参数
+     */
+    private static final RGB CALENDAR_FONT_RGB = new RGB(34, 26, 44);
+    private static final int WEEK_FONT_ALPHA = 200;
+    private static final int DATE_FONT_ALPHA = 150;
+    private static final int OUT_DATE_FONT_ALPHA = 100;
+    private static final float DATE_FONT_SIZE = 50;
+    private static final float SELECTED_FONT_SIZE = 70;
+    private static final float OUT_DATE_FONT_SIZE = 35;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -55,53 +67,54 @@ public class HomeFragment extends Fragment {
         binding.titleHome.setTypeface(FontLoader.ldzsFont);
         binding.textHome.setTypeface(FontLoader.ldzsFont);
         binding.textHitokoto.setTypeface(FontLoader.ldzsFont);
-        // 日历绘制回调
-        binding.calendar.setOnDrawDays(new CalendarView.OnDrawDays() {
+        // 日历绘制月份回调
+        binding.calendar.setOnDrawMonth((year, month, canvas, paint) -> {
+            // 更新头上的年月
+            String msg = CommonUtils.monthToEn(month) + GlobalConstants.BLANK_GAP + year;
+            if (!msg.equals(homeViewModel.getTitleText().getValue())) {
+                binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.hide));
+                homeViewModel.getTitleText().setValue(msg);
+                binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
+            }
+        });
+        // 日历绘制天回调
+        binding.calendar.setOnDrawDay(new CalendarView.OnDrawDay() {
             @Override
-            public boolean drawDay(Day day, Canvas canvas, Context context, Paint paint) {
-                float x = day.locationX + 30, y = day.locationY + 100;
+            public boolean drawDay(Day day, Canvas canvas, Paint paint) {
+                float x = 30, y = 100;
                 Paint p = new Paint(paint);
-                p.setARGB(155, 34,26,44);
+                p.setTypeface(FontLoader.ldzsFont);
+                p.setARGB(WEEK_FONT_ALPHA, CALENDAR_FONT_RGB.r, CALENDAR_FONT_RGB.g, CALENDAR_FONT_RGB.b);
+                p.setTextSize(DATE_FONT_SIZE);
+                // 默认字体下字符的宽度
+                float originWidth = p.measureText(day.text);
                 if ("-1".equals(day.dateText)) {
-                    p.setTypeface(FontLoader.ldzsFont);
-                    p.setTextSize(50);
+                    p.setAlpha(WEEK_FONT_ALPHA);
                 } else if (day.isCurrent) {
-                    p.setTypeface(FontLoader.ldzsFont);
-                    p.setTextSize(50);
-                    if (day.backgroundStyle == 2) {
-                        p.setTextSize(70);
-                        x -= 10;
-                        y += 5;
-                    } else if (day.backgroundStyle == 3) {
-                        p.setFakeBoldText(true);
-                        p.setARGB(200, 34,26,44);
-                        p.setTextSize(70);
-                        x -= 10;
-                        y += 5;
+                    p.setAlpha(DATE_FONT_ALPHA);
+                    if (day.backgroundStyle == 2 || day.backgroundStyle == 3) {
+                        if (day.backgroundStyle == 3) {
+                            p.setFakeBoldText(true);
+                        }
+                        p.setTextSize(SELECTED_FONT_SIZE);
+                        // 字体缩放后需要移动一个偏移量，保证居中
+                        x += (originWidth - p.measureText(day.text)) / 2;
                     }
                 } else {
-                    p.setTypeface(FontLoader.ldzsFont);
-                    p.setTextSize(35);
+                    p.setAlpha(OUT_DATE_FONT_ALPHA);
+                    p.setTextSize(OUT_DATE_FONT_SIZE);
+                    // 字体缩放后需要移动一个偏移量，保证居中
+                    x += (originWidth - p.measureText(day.text)) / 2;
                 }
                 canvas.drawText(day.text, x, y, p);
                 return true;
             }
 
             @Override
-            public void drawDayAbove(Day day, Canvas canvas, Context context, Paint paint) {
+            public void drawDayAbove(Day day, Canvas canvas, Paint paint) {
+                // 星期栏，不作改变
                 if ("-1".equals(day.dateText)) {
                     return;
-                }
-                // 画日历时，更新头上的年月
-                // 这个判断意思是在画每个月一号的时候更新一下
-                if (day.isCurrent && "1".equals(day.text)) {
-                    String[] daySplit = day.dateText.split("-");
-                    String msg = CommonUtils.monthToEn(Integer.parseInt(daySplit[1])) + "  " + daySplit[0];
-                    if (!msg.equals(homeViewModel.getTitleText().getValue())) {
-                        binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.hide));
-                        homeViewModel.getTitleText().setValue(msg);
-                        binding.titleHome.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.show));
-                    }
                 }
                 // 画线（通知标记）
                 boolean containsLine = SharedPreferencesLoader.notificationSp.getAll().values()
@@ -109,8 +122,8 @@ public class HomeFragment extends Fragment {
                         .anyMatch(date -> date.equals(day.dateText));
                 if (containsLine) {
                     long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
-                    Bitmap bitmap;
-                    if ((bitmap = sunPicCache.get(day.dateText)) == null) {
+                    Bitmap bitmap = sunPicCache.get(day.dateText);
+                    if (bitmap == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.line, option);
@@ -124,8 +137,8 @@ public class HomeFragment extends Fragment {
                 // 画爱心（自定义标记）
                 if (SharedPreferencesLoader.markSp.contains(day.dateText)) {
                     long randomSeed = new StringBuilder(day.dateText).reverse().toString().hashCode();
-                    Bitmap bitmap;
-                    if ((bitmap = heartPicCache.get(day.dateText)) == null) {
+                    Bitmap bitmap = heartPicCache.get(day.dateText);
+                    if (bitmap == null) {
                         BitmapFactory.Options option = new BitmapFactory.Options();
                         option.inScaled = false;
                         bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart);

@@ -23,48 +23,44 @@ public class DayManager {
     /**
      * 储存当前的日期
      */
-    private static int tempcurrent = -1;
-
-    /**
-     * 常量
-     */
-    static String[] weeks = {"日", "一", "二", "三", "四", "五", "六"};
-    static String[] dayArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
-            "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
-
-    /**
-     * 设置当前的时间
-     */
-    public static void setCurrentTime(String currentTime) {
-        DayManager.currentTime = currentTime;
-    }
-
-    /**
-     * 获取当前的时间
-     */
-    public static String getCurrentTime() {
-        return currentTime;
-    }
+    private static int tempCurrent = -1;
 
     /**
      * 储存休息天数
      */
     static Set<Integer> restDays = new HashSet<>();
 
+    /**
+     * 选中的天
+     */
+    private static int select = -1;
 
-    public static void setTempcurrent(int tempcurrent) {
-        DayManager.tempcurrent = tempcurrent;
+    /**
+     * 常量
+     */
+    static String[] weekArray = {"日", "一", "二", "三", "四", "五", "六"};
+    static String[] dayArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+            "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+
+    public static void setCurrentTime(String currentTime) {
+        DayManager.currentTime = currentTime;
     }
 
-    public static int getTempcurrent() {
-        return tempcurrent;
+    public static String getCurrentTime() {
+        return currentTime;
     }
 
     public static void setCurrent(int current) {
         DayManager.current = current;
     }
 
-    private static int select = -1;
+    public static void setTempCurrent(int tempCurrent) {
+        DayManager.tempCurrent = tempCurrent;
+    }
+
+    public static int getTempCurrent() {
+        return tempCurrent;
+    }
 
     public static void setSelect(int select) {
         DayManager.select = DayManager.select == select ? -1 : select;
@@ -75,7 +71,7 @@ public class DayManager {
      *
      * @param calendar 日历
      * @param width    控件的宽度
-     * @param height    控件的高度
+     * @param height   控件的高度
      * @return 返回的天数的集合
      */
     public static List<Day> createDayByCalendar(Calendar calendar, int width, int height, boolean drawOtherDay) {
@@ -92,7 +88,7 @@ public class DayManager {
             //为星期设置位置，为第0行，
             day.locationX = i;
             day.locationY = 0;
-            day.text = weeks[i];
+            day.text = weekArray[i];
             //设置日期颜色
             day.textColor = 0xFF699CF0;
             days.add(day);
